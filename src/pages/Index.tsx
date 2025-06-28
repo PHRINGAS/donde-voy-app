@@ -9,12 +9,13 @@ import FeriaCard from '../components/FeriaCard';
 import FeriaDetails from '../components/FeriaDetails';
 import MapView from '../components/MapView';
 import FavoritesList from '../components/FavoritesList';
+import ReminderSystem from '../components/ReminderSystem';
 import BottomNavigation from '../components/BottomNavigation';
 import { AppProvider } from '../contexts/AppContext';
 import { toast } from "sonner";
 
 const AppContent: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'map' | 'list'>('list');
+  const [activeTab, setActiveTab] = useState<'map' | 'list' | 'reminders'>('map');
   const [showSearch, setShowSearch] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
   const [selectedFeria, setSelectedFeria] = useState<Feria | null>(null);
@@ -32,29 +33,34 @@ const AppContent: React.FC = () => {
   }, [location, error, setUserLocation]);
 
   const handleNotificationsClick = () => {
-    toast.info("Funcionalidad de notificaciones próximamente");
+    setActiveTab('reminders');
   };
 
   const handleCalendarClick = () => {
-    toast.info("Funcionalidad de calendario próximamente");
+    setActiveTab('reminders');
+    toast.info("Gestiona tus recordatorios desde la sección de Alertas");
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header
-        onSearchClick={() => setShowSearch(true)}
-        onNotificationsClick={handleNotificationsClick}
-        onCalendarClick={handleCalendarClick}
-      />
-
-      {/* Contenido principal */}
-      <div className="flex-1 flex flex-col">
-        {activeTab === 'map' ? (
-          <div className="flex-1">
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'map':
+        return (
+          <div className="flex-1 pb-20">
             <MapView />
           </div>
-        ) : (
-          <div className="flex-1 overflow-y-auto p-4">
+        );
+      
+      case 'reminders':
+        return (
+          <div className="flex-1 overflow-y-auto pb-20">
+            <ReminderSystem />
+          </div>
+        );
+      
+      case 'list':
+      default:
+        return (
+          <div className="flex-1 overflow-y-auto p-4 pb-20">
             {loading && (
               <div className="text-center py-8">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
@@ -95,9 +101,22 @@ const AppContent: React.FC = () => {
               </div>
             )}
           </div>
-        )}
-      </div>
+        );
+    }
+  };
 
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header
+        onSearchClick={() => setShowSearch(true)}
+        onNotificationsClick={handleNotificationsClick}
+        onCalendarClick={handleCalendarClick}
+      />
+
+      {/* Contenido principal */}
+      {renderContent()}
+
+      {/* Navegación inferior fija */}
       <BottomNavigation
         activeTab={activeTab}
         onTabChange={setActiveTab}
