@@ -123,7 +123,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar tipo de lugar" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[1002]"> {/* Ensure dropdown is above panel backdrop */}
                     {ETIQUETAS_SISTEMA.tipos.map(tipo => (
                       <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
                     ))}
@@ -146,7 +146,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar día" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[1002]"> {/* Ensure dropdown is above panel backdrop */}
                     {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(dia => (
                       <SelectItem key={dia} value={dia}>{dia}</SelectItem>
                     ))}
@@ -169,7 +169,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar horario" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[1002]"> {/* Ensure dropdown is above panel backdrop */}
                     <SelectItem value="mañana">Mañana (8:00-14:00)</SelectItem>
                     <SelectItem value="tarde">Tarde (14:00-20:00)</SelectItem>
                     <SelectItem value="noche">Noche (20:00-00:00)</SelectItem>
