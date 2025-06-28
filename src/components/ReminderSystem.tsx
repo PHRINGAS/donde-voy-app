@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Bell, Plus, Trash2, Clock } from 'lucide-react';
+import { Bell, Plus, Trash2, Clock, AlertCircle } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { Feria } from '../types';
 import { toast } from 'sonner';
@@ -22,12 +22,15 @@ const ReminderSystem: React.FC = () => {
   const [reminderTime, setReminderTime] = useState('');
   const [customMessage, setCustomMessage] = useState('');
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
   
   const { ferias } = useApp();
 
-  // Solicitar permisos de notificación al cargar
+  // Verificar permisos al cargar
   useEffect(() => {
-    requestNotificationPermission();
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
     loadReminders();
     
     // Verificar recordatorios cada minuto
@@ -36,22 +39,38 @@ const ReminderSystem: React.FC = () => {
   }, []);
 
   const requestNotificationPermission = async () => {
-    if ('Notification' in window) {
+    if (!('Notification' in window)) {
+      toast.error('Tu navegador no soporta notificaciones');
+      return;
+    }
+
+    setIsRequestingPermission(true);
+    
+    try {
       const permission = await Notification.requestPermission();
       setNotificationPermission(permission);
       
       if (permission === 'granted') {
-        toast.success('Notificaciones activadas correctamente');
+        toast.success('¡Notificaciones activadas! Ya puedes recibir recordatorios de Feriando', {
+          duration: 5000
+        });
       } else if (permission === 'denied') {
-        toast.error('Notificaciones denegadas. Puedes activarlas en la configuración del navegador.');
+        toast.error('Notificaciones bloqueadas. Para activarlas:', {
+          duration: 8000,
+          description: '1. Haz clic en el icono de candado en la barra de direcciones\n2. Selecciona "Permitir" para notificaciones\n3. Recarga la página'
+        });
+      } else {
+        toast.warning('Permisos de notificación pendientes');
       }
-    } else {
-      toast.error('Las notificaciones no son compatibles con este navegador');
+    } catch (error) {
+      toast.error('Error al solicitar permisos de notificación');
+    } finally {
+      setIsRequestingPermission(false);
     }
   };
 
   const loadReminders = () => {
-    const saved = localStorage.getItem('feria-reminders');
+    const saved = localStorage.getItem('feriando-reminders');
     if (saved) {
       setReminders(JSON.parse(saved));
     }
@@ -59,7 +78,7 @@ const ReminderSystem: React.FC = () => {
 
   const saveReminders = (newReminders: Reminder[]) => {
     setReminders(newReminders);
-    localStorage.setItem('feria-reminders', JSON.stringify(newReminders));
+    localStorage.setItem('feriando-reminders', JSON.stringify(newReminders));
   };
 
   const addReminder = () => {
@@ -84,7 +103,7 @@ const ReminderSystem: React.FC = () => {
       feriaId: selectedFeria,
       feriaNombre: feria.nombre,
       dateTime: dateTime,
-      message: customMessage || `Recordatorio: ${feria.nombre} estará disponible pronto`,
+      message: customMessage || `¡Recordatorio de Feriando! ${feria.nombre} estará disponible pronto`,
       active: true
     };
 
@@ -112,21 +131,25 @@ const ReminderSystem: React.FC = () => {
 
   const showNotification = (reminder: Reminder) => {
     if (notificationPermission === 'granted') {
-      const notification = new Notification('Feria Finder - Recordatorio', {
-        body: reminder.message,
-        icon: '/favicon.ico',
-        badge: '/favicon.ico',
-        tag: reminder.id,
-        requireInteraction: true
-      });
+      try {
+        const notification = new Notification('Feriando - Recordatorio', {
+          body: reminder.message,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+          tag: reminder.id,
+          requireInteraction: true
+        });
 
-      notification.onclick = () => {
-        window.focus();
-        notification.close();
-      };
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+        };
 
-      // Auto cerrar después de 10 segundos
-      setTimeout(() => notification.close(), 10000);
+        // Auto cerrar después de 10 segundos
+        setTimeout(() => notification.close(), 10000);
+      } catch (error) {
+        console.error('Error al mostrar notificación:', error);
+      }
     }
     
     // También mostrar toast como respaldo
@@ -135,7 +158,6 @@ const ReminderSystem: React.FC = () => {
       action: {
         label: 'Ver Feria',
         onClick: () => {
-          // Aquí podrías abrir los detalles de la feria
           console.log('Abrir feria:', reminder.feriaId);
         }
       }
@@ -193,24 +215,30 @@ const ReminderSystem: React.FC = () => {
         </button>
       </div>
 
-      {/* Estado de permisos */}
+      {/* Estado de permisos mejorado */}
       {notificationPermission !== 'granted' && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Bell size={16} className="text-yellow-600" />
-            <span className="text-sm font-medium text-yellow-800">
-              Notificaciones desactivadas
-            </span>
+        <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0">
+              <AlertCircle size={20} className="text-orange-600 mt-0.5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-orange-800 mb-1">
+                Activa las notificaciones de Feriando
+              </h3>
+              <p className="text-xs text-orange-700 mb-3">
+                Recibe recordatorios de tus ferias favoritas directamente en tu dispositivo
+              </p>
+              <button
+                onClick={requestNotificationPermission}
+                disabled={isRequestingPermission}
+                className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <Bell size={14} />
+                {isRequestingPermission ? 'Activando...' : 'Activar Notificaciones'}
+              </button>
+            </div>
           </div>
-          <p className="text-xs text-yellow-700 mb-2">
-            Para recibir recordatorios, activa las notificaciones.
-          </p>
-          <button
-            onClick={requestNotificationPermission}
-            className="text-xs bg-yellow-200 text-yellow-800 px-3 py-1 rounded hover:bg-yellow-300 transition-colors"
-          >
-            Activar Notificaciones
-          </button>
         </div>
       )}
 
