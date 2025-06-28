@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Feria, SearchFilters, UserLocation } from '../types';
+import { Feria, SearchFilters, UserLocation } from '../types'; // Assuming Feria type already allows optional 'distancia'
 import { feriasData, getAllFerias } from '../data/feriasData';
 import { feriasService } from '../integrations/supabase/feriasService';
 import { calculateDistance } from '../utils/distanceCalculator';
@@ -22,8 +22,9 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [ferias, setFerias] = useState<Feria[]>(feriasData);
-  const [filteredFerias, setFilteredFerias] = useState<Feria[]>(feriasData);
+  const [rawFerias, setRawFerias] = useState<Feria[]>([]); // Stores ferias without distance
+  const [feriasWithDistances, setFeriasWithDistances] = useState<Feria[]>([]); // Stores ferias with distance
+  const [filteredFerias, setFilteredFerias] = useState<Feria[]>([]);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({});
   const [loading, setLoading] = useState(true);
@@ -73,14 +74,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         }
 
-        setFerias(allData);
-        setFilteredFerias(allData);
+        setRawFerias(allData);
+        // Initially, set feriasWithDistances to rawFerias; distances will be added if location is available
+        setFeriasWithDistances(allData);
+        setFilteredFerias(allData); // Initial filtered list
 
       } catch (error) {
         console.error('❌ Error cargando datos:', error);
-        // Fallback final a datos de muestra
-        setFerias(feriasData);
-        setFilteredFerias(feriasData);
+        // Fallback final a datos de muestra (ensure this data is in the correct shape)
+        const fallbackData = feriasData.map(f => ({ ...f, distancia: undefined }));
+        setRawFerias(fallbackData);
+        setFeriasWithDistances(fallbackData);
+        setFilteredFerias(fallbackData);
       } finally {
         setLoading(false);
       }
@@ -89,10 +94,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     loadUnifiedData();
   }, []);
 
-  // Actualizar distancias cuando cambia la ubicación del usuario
+  // Actualizar distancias cuando cambia la ubicación del usuario o cuando rawFerias cambia
   useEffect(() => {
-    if (userLocation) {
-      const feriasWithDistance = ferias.map(feria => ({
+    if (userLocation && rawFerias.length > 0) {
+      const updatedFeriasWithDistances = rawFerias.map(feria => ({
         ...feria,
         distancia: calculateDistance(
           userLocation.lat,
@@ -101,13 +106,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           feria.lng
         )
       }));
-      setFerias(feriasWithDistance);
+      setFeriasWithDistances(updatedFeriasWithDistances);
+    } else {
+      // If no user location, or no rawFerias, ensure feriasWithDistances is rawFerias (without distances)
+      setFeriasWithDistances(rawFerias.map(f => ({ ...f, distancia: undefined })));
     }
-  }, [userLocation]);
+  }, [userLocation, rawFerias]);
 
   // Aplicar filtros
   useEffect(() => {
-    let filtered = [...ferias];
+    let filtered = [...feriasWithDistances]; // Filter from ferias that may have distances
 
     // Filtro por categoría (nuevo)
     if (searchFilters.categoria && searchFilters.categoria !== 'Todos') {
@@ -216,13 +224,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       );
     }
 
-    // Ordenar por distancia si está disponible
-    if (userLocation) {
-      filtered.sort((a, b) => (a.distancia || 0) - (b.distancia || 0));
+    // Ordenar por distancia si está disponible (distancia is already on feriasWithDistances)
+    if (userLocation && filtered.some(f => f.distancia !== undefined)) {
+      filtered.sort((a, b) => (a.distancia || Infinity) - (b.distancia || Infinity));
     }
 
     setFilteredFerias(filtered);
-  }, [searchFilters, ferias, userLocation]);
+  }, [searchFilters, feriasWithDistances, userLocation]); // userLocation is needed here for re-sorting if it changes
 
   const toggleFavorite = (feriaId: string) => {
     setFavorites(prev =>
@@ -236,7 +244,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      ferias,
+      ferias: feriasWithDistances, // Provide feriasWithDistances as 'ferias'
       filteredFerias,
       userLocation,
       favorites,
