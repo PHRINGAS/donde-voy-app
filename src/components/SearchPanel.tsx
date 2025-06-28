@@ -49,11 +49,11 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[1001] flex"> {/* Increased z-index */}
       <div className="bg-white w-full max-w-md ml-auto h-full overflow-y-auto">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800">Buscar Ferias</h2>
+            <h2 className="text-xl font-bold text-gray-800">Buscar Lugares</h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -108,10 +108,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
-              {/* Tipo de feria */}
+              {/* Tipo de lugar */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipo de feria
+                  Tipo de lugar
                 </label>
                 <Select
                   value={localFilters.tipo || ""}
@@ -121,7 +121,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                   })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar tipo" />
+                    <SelectValue placeholder="Seleccionar tipo de lugar" />
                   </SelectTrigger>
                   <SelectContent>
                     {ETIQUETAS_SISTEMA.tipos.map(tipo => (

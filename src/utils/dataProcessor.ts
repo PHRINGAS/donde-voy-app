@@ -457,17 +457,51 @@ export const unifyAllData = async (): Promise<Feria[]> => {
         const espaciosData = await espaciosResponse.json();
         const espacios = processEspaciosCulturalesData(espaciosData);
 
-        // Unificar todos los datos
-        const allData = [...mercados, ...ferias, ...espacios];
+        // Cargar datos de ferias GeoJSON
+        console.log('🔄 Cargando datos desde ferias_geo.json...');
+        const feriasGeoJson = await loadFeriasFromGeoJSON(); // Already defined in this file
+        if (feriasGeoJson.length > 0) {
+            console.log(`✅ Se cargaron ${feriasGeoJson.length} puntos desde ferias_geo.json`);
+        } else {
+            console.log('⚠️ No se encontraron datos en ferias_geo.json o hubo un error en su carga/procesamiento.');
+        }
 
-        // Asignar IDs únicos si no los tienen
+        // Unificar todos los datos usando un Map para deduplicar por ID
+        const allDataMap = new Map<string, Feria>();
+
+        const addBatchToMap = (batch: Feria[], batchName: string) => {
+            let newItemsCount = 0;
+            batch.forEach(item => {
+                if (!item.id) {
+                    console.warn(`Item sin ID en ${batchName}, se omitirá o se le asignará uno genérico si es necesario más adelante.`);
+                    // Consider if items without ID should be skipped or given a generated one here
+                }
+                if (!allDataMap.has(item.id)) {
+                    allDataMap.set(item.id, item);
+                    newItemsCount++;
+                } else {
+                    // console.log(`ID duplicado omitido: ${item.id} de ${batchName}`);
+                }
+            });
+            console.log(`ℹ️ ${newItemsCount} nuevos items agregados desde ${batchName}. Total en mapa: ${allDataMap.size}`);
+        };
+
+        addBatchToMap(mercados, 'mercados.csv');
+        addBatchToMap(ferias, 'ferias.csv');
+        addBatchToMap(espacios, 'espacios-culturales.json');
+        addBatchToMap(feriasGeoJson, 'ferias_geo.json');
+
+        const allData = Array.from(allDataMap.values());
+
+        // Asignar IDs únicos si alguno aún no lo tiene (aunque el Map debería manejar IDs)
+        // Esta parte podría ser redundante si todos los items procesados ya tienen IDs.
         return allData.map((item, index) => ({
             ...item,
-            id: item.id || `item_${index + 1}`
+            id: item.id || `item_unified_${index + 1}` // Fallback ID if still missing
         }));
 
     } catch (error) {
-        console.error('Error al cargar datos:', error);
+        console.error('Error al unificar todos los datos:', error);
         return [];
     }
 };
