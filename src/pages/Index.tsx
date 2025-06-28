@@ -74,19 +74,19 @@ const AppContent: React.FC = () => {
 
             {filteredFerias.length === 0 && !loading ? (
               <div className="text-center py-12 px-4">
-                <div className="text-6xl mb-4">🔍</div>
+                <div className="text-6xl mb-4">🤔</div>
                 <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                  No se encontraron puntos
+                  No se encontraron lugares
                 </h3>
                 <p className="text-gray-500">
-                  Intenta ajustar los filtros de búsqueda o cambiar de categoría
+                  Intenta ajustar los filtros o cambiar de categoría
                 </p>
               </div>
             ) : (
               <div className="px-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-gray-800">
-                    Puntos disponibles ({filteredFerias.length})
+                    Lugares disponibles ({filteredFerias.length})
                   </h2>
                   {location && (
                     <span className="text-sm text-green-600 bg-green-50 px-3 py-1 rounded-full">

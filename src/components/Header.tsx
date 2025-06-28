@@ -30,11 +30,11 @@ const Header: React.FC<HeaderProps> = ({ onSearchClick, onLocationClick }) => {
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <h1 className="text-xl font-bold text-orange-600">
-                🥬 FeriaFinder
+                🤔 Donde Voy?
               </h1>
             </div>
             <div className="ml-4 text-sm text-gray-500">
-              Encontrá las mejores ferias de Buenos Aires
+              Descubrí a dónde ir en Buenos Aires
             </div>
           </div>
 
@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchClick, onLocationClick }) => {
           <div className="hidden md:flex items-center space-x-4 text-sm text-gray-600">
             <span className="flex items-center">
               <MapPin size={14} className="mr-1" />
-              {feriasFiltradas} de {totalFerias} ferias
+              {feriasFiltradas} de {totalFerias} lugares
             </span>
             <span>•</span>
             <span>{barriosUnicos} barrios</span>
@@ -68,14 +68,14 @@ const Header: React.FC<HeaderProps> = ({ onSearchClick, onLocationClick }) => {
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>📊 Estadísticas de Ferias</DialogTitle>
+                  <DialogTitle>📊 Estadísticas de Destinos</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6">
                   {/* Resumen general */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-4 bg-orange-50 rounded-lg">
                       <div className="text-2xl font-bold text-orange-600">{totalFerias}</div>
-                      <div className="text-sm text-gray-600">Total Ferias</div>
+                      <div className="text-sm text-gray-600">Total Destinos</div>
                     </div>
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">{barriosUnicos}</div>
@@ -91,9 +91,9 @@ const Header: React.FC<HeaderProps> = ({ onSearchClick, onLocationClick }) => {
                     </div>
                   </div>
 
-                  {/* Tipos de ferias */}
+                  {/* Tipos de lugares */}
                   <div>
-                    <h3 className="font-semibold text-gray-800 mb-3">Tipos de Ferias Disponibles</h3>
+                    <h3 className="font-semibold text-gray-800 mb-3">Tipos de Destinos Disponibles</h3>
                     <div className="flex flex-wrap gap-2">
                       {ETIQUETAS_SISTEMA.tipos.map(tipo => {
                         const count = ferias.filter(f => f.tipo === tipo).length;
@@ -159,7 +159,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchClick, onLocationClick }) => {
 
                   {/* Barrios más populares */}
                   <div>
-                    <h3 className="font-semibold text-gray-800 mb-3">Barrios con Más Ferias</h3>
+                    <h3 className="font-semibold text-gray-800 mb-3">Barrios con Más Destinos</h3>
                     <div className="flex flex-wrap gap-2">
                       {ETIQUETAS_SISTEMA.barrios.slice(0, 15).map(barrio => {
                         const count = ferias.filter(f => f.barrio === barrio).length;
