@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Feria, SearchFilters, UserLocation } from '../types';
 import { feriasData } from '../data/feriasData';
 import { calculateDistance } from '../utils/distanceCalculator';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface AppContextType {
   ferias: Feria[];
@@ -22,21 +23,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [ferias, setFerias] = useState<Feria[]>(feriasData);
   const [filteredFerias, setFilteredFerias] = useState<Feria[]>(feriasData);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
-  const [favorites, setFavorites] = useState<string[]>([]);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({});
-
-  // Cargar favoritos del localStorage
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem('feria-favorites');
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
-    }
-  }, []);
-
-  // Guardar favoritos en localStorage
-  useEffect(() => {
-    localStorage.setItem('feria-favorites', JSON.stringify(favorites));
-  }, [favorites]);
+  
+  // Usar localStorage para persistir favoritos
+  const [favorites, setFavorites] = useLocalStorage<string[]>('feriando-favorites', []);
 
   // Actualizar distancias cuando cambia la ubicación del usuario
   useEffect(() => {

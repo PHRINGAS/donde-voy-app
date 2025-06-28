@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Bell, Plus, Trash2, Clock, AlertCircle } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { Feria } from '../types';
 import { toast } from 'sonner';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface Reminder {
   id: string;
@@ -15,7 +15,6 @@ interface Reminder {
 }
 
 const ReminderSystem: React.FC = () => {
-  const [reminders, setReminders] = useState<Reminder[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedFeria, setSelectedFeria] = useState<string>('');
   const [reminderDate, setReminderDate] = useState('');
@@ -24,6 +23,9 @@ const ReminderSystem: React.FC = () => {
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
   
+  // Usar localStorage para persistir recordatorios
+  const [reminders, setReminders] = useLocalStorage<Reminder[]>('feriando-reminders', []);
+  
   const { ferias } = useApp();
 
   // Verificar permisos al cargar
@@ -31,7 +33,6 @@ const ReminderSystem: React.FC = () => {
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
     }
-    loadReminders();
     
     // Verificar recordatorios cada minuto
     const interval = setInterval(checkReminders, 60000);
@@ -55,9 +56,8 @@ const ReminderSystem: React.FC = () => {
           duration: 5000
         });
       } else if (permission === 'denied') {
-        toast.error('Notificaciones bloqueadas. Para activarlas:', {
-          duration: 8000,
-          description: '1. Haz clic en el icono de candado en la barra de direcciones\n2. Selecciona "Permitir" para notificaciones\n3. Recarga la página'
+        toast.error('Notificaciones bloqueadas. Para activarlas ve a la configuración de tu navegador', {
+          duration: 8000
         });
       } else {
         toast.warning('Permisos de notificación pendientes');
@@ -67,18 +67,6 @@ const ReminderSystem: React.FC = () => {
     } finally {
       setIsRequestingPermission(false);
     }
-  };
-
-  const loadReminders = () => {
-    const saved = localStorage.getItem('feriando-reminders');
-    if (saved) {
-      setReminders(JSON.parse(saved));
-    }
-  };
-
-  const saveReminders = (newReminders: Reminder[]) => {
-    setReminders(newReminders);
-    localStorage.setItem('feriando-reminders', JSON.stringify(newReminders));
   };
 
   const addReminder = () => {
@@ -107,8 +95,7 @@ const ReminderSystem: React.FC = () => {
       active: true
     };
 
-    const updatedReminders = [...reminders, newReminder];
-    saveReminders(updatedReminders);
+    setReminders(prev => [...prev, newReminder]);
     
     // Programar notificación
     scheduleNotification(newReminder);
@@ -177,17 +164,15 @@ const ReminderSystem: React.FC = () => {
         showNotification(reminder);
         
         // Marcar como ejecutado
-        const updatedReminders = reminders.map(r => 
+        setReminders(prev => prev.map(r => 
           r.id === reminder.id ? { ...r, active: false } : r
-        );
-        saveReminders(updatedReminders);
+        ));
       }
     });
   };
 
   const deleteReminder = (id: string) => {
-    const updatedReminders = reminders.filter(r => r.id !== id);
-    saveReminders(updatedReminders);
+    setReminders(prev => prev.filter(r => r.id !== id));
     toast.success('Recordatorio eliminado');
   };
 
@@ -215,7 +200,7 @@ const ReminderSystem: React.FC = () => {
         </button>
       </div>
 
-      {/* Estado de permisos mejorado */}
+      {/* Estado de permisos simplificado */}
       {notificationPermission !== 'granted' && (
         <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg p-4">
           <div className="flex items-start gap-3">
@@ -227,7 +212,7 @@ const ReminderSystem: React.FC = () => {
                 Activa las notificaciones de Feriando
               </h3>
               <p className="text-xs text-orange-700 mb-3">
-                Recibe recordatorios de tus ferias favoritas directamente en tu dispositivo
+                Permite que Feriando te envíe recordatorios de tus ferias favoritas
               </p>
               <button
                 onClick={requestNotificationPermission}
@@ -235,7 +220,7 @@ const ReminderSystem: React.FC = () => {
                 className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 <Bell size={14} />
-                {isRequestingPermission ? 'Activando...' : 'Activar Notificaciones'}
+                {isRequestingPermission ? 'Activando...' : 'Permitir Notificaciones'}
               </button>
             </div>
           </div>

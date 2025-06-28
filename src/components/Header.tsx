@@ -20,7 +20,7 @@ const Header: React.FC<HeaderProps> = ({
           <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
             <span className="text-orange-500 font-bold text-lg">🎪</span>
           </div>
-          <h1 className="text-xl font-bold">Feria Finder</h1>
+          <h1 className="text-xl font-bold">Feriando</h1>
         </div>
         
         <div className="flex items-center space-x-3">

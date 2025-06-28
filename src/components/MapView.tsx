@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useApp } from '../contexts/AppContext';
@@ -86,20 +86,31 @@ const MapView: React.FC = () => {
 
   // Inicializar mapa
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || map.current) return;
 
-    // Crear el mapa con OpenStreetMap
-    map.current = L.map(mapContainer.current).setView([-33.4489, -70.6693], 12);
+    try {
+      // Crear el mapa con OpenStreetMap
+      map.current = L.map(mapContainer.current, {
+        center: [-33.4489, -70.6693],
+        zoom: 12,
+        zoomControl: true
+      });
 
-    // Agregar capa de OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19
-    }).addTo(map.current);
+      // Agregar capa de OpenStreetMap
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(map.current);
+
+      console.log('Mapa inicializado correctamente');
+    } catch (error) {
+      console.error('Error al inicializar el mapa:', error);
+    }
 
     return () => {
       if (map.current) {
         map.current.remove();
+        map.current = null;
       }
     };
   }, []);
@@ -180,13 +191,17 @@ const MapView: React.FC = () => {
       if (userMarker.current) {
         group.addLayer(userMarker.current);
       }
-      map.current.fitBounds(group.getBounds().pad(0.1));
+      try {
+        map.current.fitBounds(group.getBounds().pad(0.1));
+      } catch (error) {
+        console.log('No se pudo ajustar los límites del mapa');
+      }
     }
   }, [filteredFerias]);
 
   return (
     <div className="h-full relative">
-      <div ref={mapContainer} className="w-full h-full" />
+      <div ref={mapContainer} className="w-full h-full" style={{ minHeight: '400px' }} />
       
       {/* Leyenda de colores */}
       <div className="absolute top-4 left-4 bg-white bg-opacity-90 rounded-lg p-3 shadow-lg max-w-xs z-[1000]">
