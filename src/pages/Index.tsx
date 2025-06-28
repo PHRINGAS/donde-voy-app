@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { useApp } from '../contexts/AppContext';
@@ -19,7 +18,7 @@ const AppContent: React.FC = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
   const [selectedFeria, setSelectedFeria] = useState<Feria | null>(null);
-  
+
   const { location, error, loading } = useGeolocation();
   const { setUserLocation, filteredFerias, favorites } = useApp();
 
@@ -32,13 +31,12 @@ const AppContent: React.FC = () => {
     }
   }, [location, error, setUserLocation]);
 
-  const handleNotificationsClick = () => {
-    setActiveTab('reminders');
-  };
-
-  const handleCalendarClick = () => {
-    setActiveTab('reminders');
-    toast.info("Gestiona tus recordatorios desde la sección de Alertas");
+  const handleLocationClick = () => {
+    if (location) {
+      toast.success("Ubicación actualizada");
+    } else {
+      toast.error("No se pudo obtener la ubicación");
+    }
   };
 
   const renderContent = () => {
@@ -49,14 +47,14 @@ const AppContent: React.FC = () => {
             <MapView />
           </div>
         );
-      
+
       case 'reminders':
         return (
           <div className="flex-1 overflow-y-auto pb-20">
             <ReminderSystem />
           </div>
         );
-      
+
       case 'list':
       default:
         return (
@@ -67,7 +65,7 @@ const AppContent: React.FC = () => {
                 <p className="mt-2 text-gray-600">Detectando ubicación...</p>
               </div>
             )}
-            
+
             {filteredFerias.length === 0 && !loading ? (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">🔍</div>
@@ -90,7 +88,7 @@ const AppContent: React.FC = () => {
                     </span>
                   )}
                 </div>
-                
+
                 {filteredFerias.map(feria => (
                   <FeriaCard
                     key={feria.id}
@@ -109,8 +107,7 @@ const AppContent: React.FC = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header
         onSearchClick={() => setShowSearch(true)}
-        onNotificationsClick={handleNotificationsClick}
-        onCalendarClick={handleCalendarClick}
+        onLocationClick={handleLocationClick}
       />
 
       {/* Contenido principal */}

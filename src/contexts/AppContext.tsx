@@ -93,25 +93,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     let filtered = [...ferias];
 
+    // Filtro por tipo de feria
     if (searchFilters.tipo) {
       filtered = filtered.filter(feria =>
         feria.tipo.toLowerCase().includes(searchFilters.tipo!.toLowerCase())
       );
     }
 
+    // Filtro por día de funcionamiento
     if (searchFilters.dia) {
       filtered = filtered.filter(feria =>
         feria.diasFuncionamiento.includes(searchFilters.dia!)
       );
     }
 
+    // Filtro por dirección o nombre
     if (searchFilters.direccion) {
       filtered = filtered.filter(feria =>
         feria.nombre.toLowerCase().includes(searchFilters.direccion!.toLowerCase()) ||
-        feria.direccion.toLowerCase().includes(searchFilters.direccion!.toLowerCase())
+        feria.direccion.toLowerCase().includes(searchFilters.direccion!.toLowerCase()) ||
+        (feria.barrio && feria.barrio.toLowerCase().includes(searchFilters.direccion!.toLowerCase())) ||
+        (feria.comuna && feria.comuna.toLowerCase().includes(searchFilters.direccion!.toLowerCase()))
       );
     }
 
+    // Filtro por productos
     if (searchFilters.productos && searchFilters.productos.length > 0) {
       filtered = filtered.filter(feria =>
         searchFilters.productos!.some(producto =>
@@ -119,6 +125,71 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             feriaProducto.toLowerCase().includes(producto.toLowerCase())
           )
         )
+      );
+    }
+
+    // Filtro por barrio
+    if (searchFilters.barrio && searchFilters.barrio.length > 0) {
+      filtered = filtered.filter(feria =>
+        feria.barrio && searchFilters.barrio!.some(barrio =>
+          feria.barrio!.toLowerCase().includes(barrio.toLowerCase())
+        )
+      );
+    }
+
+    // Filtro por comuna
+    if (searchFilters.comuna && searchFilters.comuna.length > 0) {
+      filtered = filtered.filter(feria =>
+        feria.comuna && searchFilters.comuna!.some(comuna =>
+          feria.comuna!.toLowerCase().includes(comuna.toLowerCase())
+        )
+      );
+    }
+
+    // Filtro por etiquetas
+    if (searchFilters.etiquetas && searchFilters.etiquetas.length > 0) {
+      filtered = filtered.filter(feria =>
+        searchFilters.etiquetas!.some(etiqueta =>
+          feria.etiquetas.some(feriaEtiqueta =>
+            feriaEtiqueta.toLowerCase().includes(etiqueta.toLowerCase())
+          )
+        )
+      );
+    }
+
+    // Filtro por tipo de horario
+    if (searchFilters.horarioTipo) {
+      filtered = filtered.filter(feria =>
+        feria.horarioTipo === searchFilters.horarioTipo
+      );
+    }
+
+    // Filtro por especialidades
+    if (searchFilters.especialidad && searchFilters.especialidad.length > 0) {
+      filtered = filtered.filter(feria =>
+        searchFilters.especialidad!.some(especialidad =>
+          feria.especialidad.some(feriaEspecialidad =>
+            feriaEspecialidad.toLowerCase().includes(especialidad.toLowerCase())
+          )
+        )
+      );
+    }
+
+    // Filtro por servicios
+    if (searchFilters.servicios && searchFilters.servicios.length > 0) {
+      filtered = filtered.filter(feria =>
+        searchFilters.servicios!.some(servicio =>
+          feria.servicios.some(feriaServicio =>
+            feriaServicio.toLowerCase().includes(servicio.toLowerCase())
+          )
+        )
+      );
+    }
+
+    // Filtro por distancia máxima
+    if (searchFilters.distanciaMaxima && userLocation) {
+      filtered = filtered.filter(feria =>
+        feria.distancia && feria.distancia <= searchFilters.distanciaMaxima!
       );
     }
 

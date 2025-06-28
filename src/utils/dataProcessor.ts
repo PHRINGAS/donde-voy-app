@@ -1,4 +1,4 @@
-import { Feria } from '../types';
+import { Feria, ETIQUETAS_SISTEMA } from '../types';
 
 interface GeoJSONFeature {
     type: string;
@@ -67,7 +67,8 @@ const extractProductos = (productos: string | null): string[] => {
                 'limpieza': 'Limpieza',
                 'pescaderia': 'Pescadería',
                 'granja y carne': 'Carnes',
-                'fiambre y lácteos': 'Fiambres y Lácteos'
+                'fiambre y lácteos': 'Fiambres y Lácteos',
+                'Productos Organicos': 'Productos Orgánicos'
             };
             return productoMap[p] || p;
         });
@@ -83,6 +84,17 @@ const extractHorarios = (horario: string): { apertura: string; cierre: string } 
         };
     }
     return { apertura: '08:00', cierre: '14:00' };
+};
+
+// Función para determinar el tipo de horario
+const determineHorarioTipo = (horarios: { apertura: string; cierre: string }): 'mañana' | 'tarde' | 'noche' | 'todo_dia' => {
+    const apertura = parseInt(horarios.apertura.split(':')[0]);
+    const cierre = parseInt(horarios.cierre.split(':')[0]);
+
+    if (apertura >= 6 && cierre <= 14) return 'mañana';
+    if (apertura >= 14 && cierre <= 20) return 'tarde';
+    if (apertura >= 20 || cierre <= 6) return 'noche';
+    return 'todo_dia';
 };
 
 // Función para determinar el tipo de feria basado en productos
@@ -105,11 +117,109 @@ const determineTipo = (productos: string[]): string => {
     return 'Mercado'; // Por defecto
 };
 
+// Función para generar etiquetas especializadas
+const generateEspecialidades = (productos: string[], observaciones: string | null): string[] => {
+    const especialidades: string[] = [];
+    const productosStr = productos.join(' ').toLowerCase();
+    const observacionesStr = (observaciones || '').toLowerCase();
+
+    // Detectar especialidades basadas en productos
+    if (productosStr.includes('orgánico') || productosStr.includes('organico')) {
+        especialidades.push('Orgánico');
+    }
+
+    if (productosStr.includes('local') || observacionesStr.includes('local')) {
+        especialidades.push('Local');
+    }
+
+    if (productosStr.includes('tradicional') || observacionesStr.includes('tradicional')) {
+        especialidades.push('Tradicional');
+    }
+
+    if (productosStr.includes('fresco') || productosStr.includes('fresco')) {
+        especialidades.push('Fresco');
+    }
+
+    if (observacionesStr.includes('sabe la tierra')) {
+        especialidades.push('Sustentable');
+        especialidades.push('Orgánico');
+    }
+
+    if (observacionesStr.includes('ba market')) {
+        especialidades.push('Moderno');
+    }
+
+    return especialidades;
+};
+
+// Función para generar servicios disponibles
+const generateServicios = (observaciones: string | null, nombre: string): string[] => {
+    const servicios: string[] = [];
+    const observacionesStr = (observaciones || '').toLowerCase();
+    const nombreStr = nombre.toLowerCase();
+
+    // Detectar servicios basados en observaciones y nombre
+    if (observacionesStr.includes('plaza') || observacionesStr.includes('parque')) {
+        servicios.push('Área de Descanso');
+        servicios.push('Estacionamiento');
+    }
+
+    if (observacionesStr.includes('sabe la tierra')) {
+        servicios.push('Talleres');
+        servicios.push('Sustentable');
+    }
+
+    if (observacionesStr.includes('ba market')) {
+        servicios.push('Pago Digital');
+        servicios.push('WiFi');
+    }
+
+    if (nombreStr.includes('folclore') || nombreStr.includes('tradicional')) {
+        servicios.push('Música en Vivo');
+        servicios.push('Actividades para Niños');
+    }
+
+    return servicios;
+};
+
+// Función para generar etiquetas generales
+const generateEtiquetas = (productos: string[], tipo: string, especialidades: string[], servicios: string[]): string[] => {
+    const etiquetas: string[] = [];
+
+    // Agregar tipo como etiqueta
+    etiquetas.push(tipo);
+
+    // Agregar productos principales como etiquetas
+    productos.slice(0, 3).forEach(producto => {
+        if (ETIQUETAS_SISTEMA.productos.includes(producto)) {
+            etiquetas.push(producto);
+        }
+    });
+
+    // Agregar especialidades
+    etiquetas.push(...especialidades);
+
+    // Agregar servicios destacados
+    servicios.slice(0, 2).forEach(servicio => {
+        if (ETIQUETAS_SISTEMA.servicios.includes(servicio)) {
+            etiquetas.push(servicio);
+        }
+    });
+
+    return [...new Set(etiquetas)]; // Eliminar duplicados
+};
+
 export const processGeoJSONData = (geoJSONData: GeoJSONData): Feria[] => {
     return geoJSONData.features.map(feature => {
         const props = feature.properties;
         const [lng, lat] = feature.geometry.coordinates;
         const productos = extractProductos(props.productos);
+        const horarios = extractHorarios(props.horario);
+        const tipo = determineTipo(productos);
+        const horarioTipo = determineHorarioTipo(horarios);
+        const especialidades = generateEspecialidades(productos, props.observacio);
+        const servicios = generateServicios(props.observacio, props.nombre);
+        const etiquetas = generateEtiquetas(productos, tipo, especialidades, servicios);
 
         return {
             id: props.id.toString(),
@@ -117,12 +227,21 @@ export const processGeoJSONData = (geoJSONData: GeoJSONData): Feria[] => {
             direccion: props.direccion,
             lat: lat,
             lng: lng,
-            tipo: determineTipo(productos),
+            tipo: tipo,
             diasFuncionamiento: [convertDia(props.dia)],
-            horarios: extractHorarios(props.horario),
+            horarios: horarios,
             productos: productos,
             descripcion: `${props.nombre} - ${props.barrio}, ${props.comuna}${props.observacio ? ` - ${props.observacio}` : ''}`,
-            telefono: undefined
+            telefono: undefined,
+            barrio: props.barrio,
+            comuna: props.comuna,
+            numero: props.numero,
+            observaciones: props.observacio || undefined,
+            etiquetas: etiquetas,
+            horarioTipo: horarioTipo,
+            frecuencia: 'semanal',
+            especialidad: especialidades,
+            servicios: servicios
         };
     });
 };
@@ -130,19 +249,8 @@ export const processGeoJSONData = (geoJSONData: GeoJSONData): Feria[] => {
 // Función para cargar y procesar el archivo ferias_geo.json
 export const loadFeriasFromGeoJSON = async (): Promise<Feria[]> => {
     try {
-        let geoJSONData: GeoJSONData;
-        if (typeof window === 'undefined') {
-            // Node.js: leer archivo localmente
-            const fs = await import('fs/promises');
-            const path = require('path');
-            const filePath = path.resolve(process.cwd(), 'ferias_geo.json');
-            const file = await fs.readFile(filePath, 'utf-8');
-            geoJSONData = JSON.parse(file);
-        } else {
-            // Navegador: fetch
-            const response = await fetch('/ferias_geo.json');
-            geoJSONData = await response.json();
-        }
+        const response = await fetch('/ferias_geo.json');
+        const geoJSONData: GeoJSONData = await response.json();
         return processGeoJSONData(geoJSONData);
     } catch (error) {
         console.error('Error cargando datos de ferias:', error);
