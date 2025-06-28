@@ -5,6 +5,7 @@ import { useApp } from '../contexts/AppContext';
 import { Feria } from '../types';
 import { Button } from './ui/button';
 import { Navigation } from 'lucide-react';
+import { getClosestPoints } from '../utils/dataProcessor';
 
 // Fix para los iconos de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -23,27 +24,42 @@ const MapView: React.FC = () => {
 
   const { filteredFerias, userLocation } = useApp();
 
-  // Colores para diferentes tipos de ferias
-  const getMarkerColor = (tipo: string): string => {
-    const colors: { [key: string]: string } = {
-      'Feria Libre': '#FF6B6B',
-      'Feria Orgánica': '#4ECDC4',
-      'Feria Artesanal': '#45B7D1',
-      'Feria Gastronómica': '#96CEB4',
-      'Feria Navideña': '#FFEAA7',
+  // Colores para diferentes categorías
+  const getMarkerColor = (categoria: string, tipo: string): string => {
+    const categoryColors: { [key: string]: string } = {
+      'Mercados': '#4ECDC4',
+      'Ferias': '#FF6B6B',
+      'Cultura': '#9B59B6'
+    };
+
+    // Colores específicos por tipo dentro de las categorías
+    const typeColors: { [key: string]: string } = {
       'Mercado': '#4ECDC4',
       'Artesanías': '#45B7D1',
-      'Folclore': '#96CEB4',
-      'Gastronómico': '#FF6B6B',
-      'default': '#FF8C00'
+      'Libros': '#96CEB4',
+      'Antigüedades': '#FFEAA7',
+      'Teatro': '#9B59B6',
+      'Museo': '#8E44AD',
+      'Centro Cultural': '#6C5CE7',
+      'Bar': '#E17055',
+      'Café': '#FDCB6E'
     };
-    return colors[tipo] || colors.default;
+
+    return typeColors[tipo] || categoryColors[categoria] || '#FF8C00';
   };
 
-  // Crear icono personalizado para ferias con tamaño dinámico
-  const createFeriaIcon = (color: string, size: number = 30) => {
+  // Crear icono personalizado para puntos con tamaño dinámico y efectos hover
+  const createPointIcon = (color: string, size: number = 30, categoria: string) => {
+    const iconMap: { [key: string]: string } = {
+      'Mercados': '🛒',
+      'Ferias': '🎪',
+      'Cultura': '🎭'
+    };
+
+    const icon = iconMap[categoria] || '📍';
+
     return L.divIcon({
-      className: 'custom-feria-marker',
+      className: 'custom-point-marker',
       html: `
         <div style="
           width: ${size}px;
@@ -57,13 +73,14 @@ const MapView: React.FC = () => {
           align-items: center;
           justify-content: center;
           transition: all 0.3s ease;
-        ">
+          cursor: pointer;
+        " onmouseover="this.style.transform='rotate(-45deg) scale(1.2)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.4)';" onmouseout="this.style.transform='rotate(-45deg) scale(1)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.3)';">
           <div style="
             transform: rotate(45deg);
             font-size: ${size * 0.4}px;
             color: white;
             font-weight: bold;
-          ">🎪</div>
+          ">${icon}</div>
         </div>
       `,
       iconSize: [size, size],
@@ -99,29 +116,26 @@ const MapView: React.FC = () => {
     }
   };
 
-  // Función para obtener las 5 ferias más cercanas
-  const getClosestFerias = (ferias: Feria[], userLat: number, userLng: number, count: number = 5) => {
-    return ferias
-      .filter(feria => feria.distancia !== undefined)
-      .sort((a, b) => (a.distancia || 0) - (b.distancia || 0))
-      .slice(0, count);
+  // Función para obtener los puntos más cercanos (máximo 10)
+  const getClosestPointsToShow = (points: Feria[], userLat: number, userLng: number) => {
+    return getClosestPoints(points, userLat, userLng, 10);
   };
 
   // Función para calcular el tamaño del marcador basado en la distancia y zoom
-  const getMarkerSize = (feria: Feria, isClosest: boolean, zoom: number): number => {
+  const getMarkerSize = (point: Feria, isClosest: boolean, zoom: number): number => {
     if (isClosest) {
-      return 30; // Tamaño normal para las 5 más cercanas
+      return 30; // Tamaño normal para los puntos más cercanos
     }
 
-    // Tamaño base del 20% para las demás
+    // Tamaño base del 20% para los demás
     let baseSize = 6; // 20% de 30px
 
     // Aumentar tamaño basado en la distancia y zoom
-    if (feria.distancia && feria.distancia < 2000) { // Dentro de 2km
+    if (point.distancia && point.distancia < 2000) { // Dentro de 2km
       baseSize = Math.max(baseSize, 12);
     }
 
-    if (feria.distancia && feria.distancia < 1000) { // Dentro de 1km
+    if (point.distancia && point.distancia < 1000) { // Dentro de 1km
       baseSize = Math.max(baseSize, 18);
     }
 
@@ -191,7 +205,7 @@ const MapView: React.FC = () => {
     }
   }, [userLocation, isUserMovingMap]);
 
-  // Actualizar marcadores de ferias
+  // Actualizar marcadores de puntos
   useEffect(() => {
     if (!map.current) return;
 
@@ -201,20 +215,20 @@ const MapView: React.FC = () => {
     });
     feriaMarkers.current = [];
 
-    // Si no hay ubicación del usuario, mostrar todas las ferias en tamaño normal
+    // Si no hay ubicación del usuario, mostrar todos los puntos en tamaño normal
     if (!userLocation) {
-      filteredFerias.forEach((feria: Feria) => {
-        const markerColor = getMarkerColor(feria.tipo);
+      filteredFerias.forEach((point: Feria) => {
+        const markerColor = getMarkerColor(point.categoria, point.tipo);
 
-        const marker = L.marker([feria.lat, feria.lng], {
-          icon: createFeriaIcon(markerColor, 30)
+        const marker = L.marker([point.lat, point.lng], {
+          icon: createPointIcon(markerColor, 30, point.categoria)
         }).addTo(map.current!);
 
         // Crear popup
         const popupContent = `
           <div style="padding: 12px; min-width: 200px;">
-            <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${feria.nombre}</h3>
-            <p style="color: #666; font-size: 14px; margin-bottom: 8px;">${feria.direccion}</p>
+            <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${point.nombre}</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 8px;">${point.direccion}</p>
             <div style="margin-bottom: 8px;">
               <span style="
                 background: #fed7aa; 
@@ -222,13 +236,21 @@ const MapView: React.FC = () => {
                 padding: 4px 8px; 
                 border-radius: 12px; 
                 font-size: 12px;
-              ">${feria.tipo}</span>
+              ">${point.tipo}</span>
+              <span style="
+                background: #dbeafe; 
+                color: #1e40af; 
+                padding: 4px 8px; 
+                border-radius: 12px; 
+                font-size: 12px;
+                margin-left: 4px;
+              ">${point.categoria}</span>
             </div>
             <p style="color: #666; font-size: 12px; margin-bottom: 4px;">
-              <strong>Horarios:</strong> ${feria.horarios.apertura} - ${feria.horarios.cierre}
+              <strong>Horarios:</strong> ${point.horarios.apertura} - ${point.horarios.cierre}
             </p>
             <p style="color: #666; font-size: 12px; margin-bottom: 4px;">
-              <strong>Días:</strong> ${feria.diasFuncionamiento.join(', ')}
+              <strong>Días:</strong> ${point.diasFuncionamiento.join(', ')}
             </p>
           </div>
         `;
@@ -237,7 +259,7 @@ const MapView: React.FC = () => {
         feriaMarkers.current.push(marker);
       });
 
-      // Ajustar vista para mostrar todas las ferias
+      // Ajustar vista para mostrar todos los puntos
       if (filteredFerias.length > 0 && !isUserMovingMap) {
         const group = new L.FeatureGroup(feriaMarkers.current);
         try {
@@ -249,25 +271,25 @@ const MapView: React.FC = () => {
       return;
     }
 
-    // Obtener las 5 ferias más cercanas
-    const closestFerias = getClosestFerias(filteredFerias, userLocation.lat, userLocation.lng);
+    // Obtener los 10 puntos más cercanos
+    const closestPoints = getClosestPointsToShow(filteredFerias, userLocation.lat, userLocation.lng);
     const currentZoom = map.current.getZoom();
 
     // Agregar nuevos marcadores
-    filteredFerias.forEach((feria: Feria) => {
-      const isClosest = closestFerias.some(cf => cf.id === feria.id);
-      const markerSize = getMarkerSize(feria, isClosest, currentZoom);
-      const markerColor = getMarkerColor(feria.tipo);
+    filteredFerias.forEach((point: Feria) => {
+      const isClosest = closestPoints.some(cp => cp.id === point.id);
+      const markerSize = getMarkerSize(point, isClosest, currentZoom);
+      const markerColor = getMarkerColor(point.categoria, point.tipo);
 
-      const marker = L.marker([feria.lat, feria.lng], {
-        icon: createFeriaIcon(markerColor, markerSize)
+      const marker = L.marker([point.lat, point.lng], {
+        icon: createPointIcon(markerColor, markerSize, point.categoria)
       }).addTo(map.current!);
 
       // Crear popup
       const popupContent = `
         <div style="padding: 12px; min-width: 200px;">
-          <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${feria.nombre}</h3>
-          <p style="color: #666; font-size: 14px; margin-bottom: 8px;">${feria.direccion}</p>
+          <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${point.nombre}</h3>
+          <p style="color: #666; font-size: 14px; margin-bottom: 8px;">${point.direccion}</p>
           <div style="margin-bottom: 8px;">
             <span style="
               background: #fed7aa; 
@@ -275,19 +297,27 @@ const MapView: React.FC = () => {
               padding: 4px 8px; 
               border-radius: 12px; 
               font-size: 12px;
-            ">${feria.tipo}</span>
+            ">${point.tipo}</span>
+            <span style="
+              background: #dbeafe; 
+              color: #1e40af; 
+              padding: 4px 8px; 
+              border-radius: 12px; 
+              font-size: 12px;
+              margin-left: 4px;
+            ">${point.categoria}</span>
           </div>
           <p style="color: #666; font-size: 12px; margin-bottom: 4px;">
-            <strong>Horarios:</strong> ${feria.horarios.apertura} - ${feria.horarios.cierre}
+            <strong>Horarios:</strong> ${point.horarios.apertura} - ${point.horarios.cierre}
           </p>
           <p style="color: #666; font-size: 12px; margin-bottom: 4px;">
-            <strong>Días:</strong> ${feria.diasFuncionamiento.join(', ')}
+            <strong>Días:</strong> ${point.diasFuncionamiento.join(', ')}
           </p>
-          ${feria.distancia ? `
+          ${point.distancia ? `
             <p style="color: #2563eb; font-size: 12px; font-weight: 500;">
-              📍 ${feria.distancia < 1000 ?
-            `${Math.round(feria.distancia)} m` :
-            `${(feria.distancia / 1000).toFixed(1)} km`} de distancia
+              📍 ${point.distancia < 1000 ?
+            `${Math.round(point.distancia)} m` :
+            `${(point.distancia / 1000).toFixed(1)} km`} de distancia
             </p>
           ` : ''}
         </div>
@@ -317,16 +347,16 @@ const MapView: React.FC = () => {
 
     const updateMarkerSizes = () => {
       const currentZoom = map.current!.getZoom();
-      const closestFerias = getClosestFerias(filteredFerias, userLocation.lat, userLocation.lng);
+      const closestPoints = getClosestPointsToShow(filteredFerias, userLocation.lat, userLocation.lng);
 
       feriaMarkers.current.forEach((marker, index) => {
-        const feria = filteredFerias[index];
-        if (feria) {
-          const isClosest = closestFerias.some(cf => cf.id === feria.id);
-          const newSize = getMarkerSize(feria, isClosest, currentZoom);
-          const markerColor = getMarkerColor(feria.tipo);
+        const point = filteredFerias[index];
+        if (point) {
+          const isClosest = closestPoints.some(cp => cp.id === point.id);
+          const newSize = getMarkerSize(point, isClosest, currentZoom);
+          const markerColor = getMarkerColor(point.categoria, point.tipo);
 
-          marker.setIcon(createFeriaIcon(markerColor, newSize));
+          marker.setIcon(createPointIcon(markerColor, newSize, point.categoria));
         }
       });
     };
@@ -346,34 +376,33 @@ const MapView: React.FC = () => {
 
       {/* Leyenda de colores */}
       <div className="absolute top-4 left-4 bg-white bg-opacity-90 rounded-lg p-3 shadow-lg max-w-xs z-[1000]">
-        <h4 className="font-semibold text-sm mb-2">Tipos de Ferias</h4>
+        <h4 className="font-semibold text-sm mb-2">Categorías</h4>
         <div className="space-y-1">
           {Object.entries({
-            'Mercado': '#4ECDC4',
-            'Artesanías': '#45B7D1',
-            'Folclore': '#96CEB4',
-            'Gastronómico': '#FF6B6B'
-          }).map(([tipo, color]) => (
-            <div key={tipo} className="flex items-center gap-2">
+            'Mercados': '#4ECDC4',
+            'Ferias': '#FF6B6B',
+            'Cultura': '#9B59B6'
+          }).map(([categoria, color]) => (
+            <div key={categoria} className="flex items-center gap-2">
               <div
                 className="w-3 h-3 rounded-full border border-white shadow-sm"
                 style={{ backgroundColor: color }}
               />
-              <span className="text-xs text-gray-700">{tipo}</span>
+              <span className="text-xs text-gray-700">{categoria}</span>
             </div>
           ))}
         </div>
         <div className="mt-2 pt-2 border-t border-gray-200">
           <p className="text-xs text-gray-600">
-            <strong>🎯</strong> Las 5 ferias más cercanas se muestran en tamaño completo
+            <strong>🎯</strong> Los 10 puntos más cercanos se muestran en tamaño completo
           </p>
         </div>
       </div>
 
-      {/* Contador de ferias */}
+      {/* Contador de puntos */}
       <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 rounded-lg px-3 py-2 shadow-lg z-[1000]">
         <span className="text-sm font-medium text-gray-700">
-          {filteredFerias.length} ferias encontradas
+          {filteredFerias.length} puntos encontrados
         </span>
       </div>
 

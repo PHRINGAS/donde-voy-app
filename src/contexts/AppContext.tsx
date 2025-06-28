@@ -4,6 +4,7 @@ import { feriasData, getAllFerias } from '../data/feriasData';
 import { feriasService } from '../integrations/supabase/feriasService';
 import { calculateDistance } from '../utils/distanceCalculator';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { unifyAllData } from '../utils/dataProcessor';
 
 interface AppContextType {
   ferias: Feria[];
@@ -30,38 +31,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Usar localStorage para persistir favoritos
   const [favorites, setFavorites] = useLocalStorage<string[]>('feriando-favorites', []);
 
-  // Cargar datos de ferias al inicializar
+  // Cargar datos unificados al inicializar
   useEffect(() => {
-    const loadFerias = async () => {
+    const loadUnifiedData = async () => {
       try {
         setLoading(true);
 
-        // Intentar cargar desde Supabase primero
-        let allFerias: Feria[] = [];
+        // Intentar cargar datos unificados primero
+        let allData: Feria[] = [];
 
         try {
-          console.log('🔄 Intentando cargar ferias desde Supabase...');
-          allFerias = await feriasService.getAllFerias();
+          console.log('🔄 Cargando datos unificados (mercados, ferias, cultura)...');
+          allData = await unifyAllData();
 
-          if (allFerias.length > 0) {
-            console.log(`✅ Se cargaron ${allFerias.length} ferias desde Supabase`);
+          if (allData.length > 0) {
+            console.log(`✅ Se cargaron ${allData.length} puntos desde datos unificados`);
           } else {
-            throw new Error('No hay datos en Supabase');
+            throw new Error('No se pudieron cargar datos unificados');
           }
-        } catch (supabaseError) {
-          console.log('⚠️  No se pudieron cargar datos desde Supabase, usando datos locales...');
-          console.error('Error Supabase:', supabaseError);
+        } catch (unifiedError) {
+          console.log('⚠️  No se pudieron cargar datos unificados, intentando Supabase...');
+          console.error('Error datos unificados:', unifiedError);
 
-          // Fallback a datos locales (muestra + GeoJSON)
-          allFerias = await getAllFerias();
-          console.log(`✅ Se cargaron ${allFerias.length} ferias desde datos locales`);
+          // Fallback a Supabase
+          try {
+            console.log('🔄 Intentando cargar ferias desde Supabase...');
+            allData = await feriasService.getAllFerias();
+
+            if (allData.length > 0) {
+              console.log(`✅ Se cargaron ${allData.length} ferias desde Supabase`);
+            } else {
+              throw new Error('No hay datos en Supabase');
+            }
+          } catch (supabaseError) {
+            console.log('⚠️  No se pudieron cargar datos desde Supabase, usando datos locales...');
+            console.error('Error Supabase:', supabaseError);
+
+            // Fallback a datos locales
+            allData = await getAllFerias();
+            console.log(`✅ Se cargaron ${allData.length} ferias desde datos locales`);
+          }
         }
 
-        setFerias(allFerias);
-        setFilteredFerias(allFerias);
+        setFerias(allData);
+        setFilteredFerias(allData);
 
       } catch (error) {
-        console.error('❌ Error cargando ferias:', error);
+        console.error('❌ Error cargando datos:', error);
         // Fallback final a datos de muestra
         setFerias(feriasData);
         setFilteredFerias(feriasData);
@@ -70,7 +86,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     };
 
-    loadFerias();
+    loadUnifiedData();
   }, []);
 
   // Actualizar distancias cuando cambia la ubicación del usuario
@@ -92,6 +108,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Aplicar filtros
   useEffect(() => {
     let filtered = [...ferias];
+
+    // Filtro por categoría (nuevo)
+    if (searchFilters.categoria && searchFilters.categoria !== 'Todos') {
+      filtered = filtered.filter(feria =>
+        feria.categoria === searchFilters.categoria
+      );
+    }
 
     // Filtro por tipo de feria
     if (searchFilters.tipo) {

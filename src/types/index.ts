@@ -5,6 +5,7 @@ export interface Feria {
   lat: number;
   lng: number;
   tipo: string;
+  categoria: string;
   diasFuncionamiento: string[];
   horarios: {
     apertura: string;
@@ -36,6 +37,7 @@ export interface User {
 }
 
 export interface SearchFilters {
+  categoria?: string;
   tipo?: string;
   dia?: string;
   horaApertura?: string;

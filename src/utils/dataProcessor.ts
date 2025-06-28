@@ -31,6 +31,55 @@ interface GeoJSONData {
     features: GeoJSONFeature[];
 }
 
+// Tipos para los diferentes datos
+interface MercadoData {
+    NOMBRE: string;
+    NOMBRE_MAP: string;
+    UBICACION: string;
+    BARRIO: string;
+    LON: string;
+    LAT: string;
+}
+
+interface FeriaCSVData {
+    LAT: string;
+    LNG: string;
+    ID: string;
+    OBJETO: string;
+    TIPO: string;
+    NOMBRE: string;
+    DIAS: string;
+    OBSERVACIO: string;
+    DIRECCION: string;
+    CALLE: string;
+    CRUCE: string;
+    DIREC_NORM: string;
+    DIREC_ARCG: string;
+    BARRIO: string;
+    COMUNA: string;
+}
+
+interface EspacioCulturalData {
+    id: string;
+    nombre: string;
+    tipo: string;
+    categoria: string;
+    direccion: string;
+    lat: number;
+    lng: number;
+    barrio: string;
+    comuna: string;
+    descripcion: string;
+    horarios: {
+        apertura: string;
+        cierre: string;
+    };
+    diasFuncionamiento: string[];
+    servicios: string[];
+    etiquetas: string[];
+    telefono: string;
+}
+
 // Función para convertir el formato de día
 const convertDia = (dia: string): string => {
     const diaMap: { [key: string]: string } = {
@@ -256,4 +305,201 @@ export const loadFeriasFromGeoJSON = async (): Promise<Feria[]> => {
         console.error('Error cargando datos de ferias:', error);
         return [];
     }
+};
+
+// Función para procesar datos de mercados CSV
+export const processMercadosData = (csvData: string): Feria[] => {
+    const lines = csvData.split('\n').filter(line => line.trim());
+    const headers = lines[0].split(';');
+    const data = lines.slice(1);
+
+    return data.map((line, index) => {
+        const values = line.split(';');
+        const mercado: any = {};
+        headers.forEach((header, i) => {
+            mercado[header] = values[i];
+        });
+
+        return {
+            id: `mercado_${index + 1}`,
+            nombre: mercado.NOMBRE || 'Mercado',
+            direccion: mercado.UBICACION || '',
+            lat: parseFloat(mercado.LAT?.replace(',', '.')) || 0,
+            lng: parseFloat(mercado.LON?.replace(',', '.')) || 0,
+            tipo: 'Mercado',
+            categoria: 'Mercados',
+            diasFuncionamiento: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+            horarios: {
+                apertura: '08:00',
+                cierre: '18:00'
+            },
+            productos: ['Frutas y Verduras', 'Carnes', 'Fiambres y Lácteos', 'Pescadería', 'Panadería'],
+            descripcion: `Mercado municipal en ${mercado.BARRIO}`,
+            barrio: mercado.BARRIO || '',
+            comuna: mercado.COMUNA || '',
+            etiquetas: ['Mercado', 'Municipal', 'Alimentos', 'Fresco'],
+            horarioTipo: 'mañana' as const,
+            frecuencia: 'semanal' as const,
+            especialidad: ['Local', 'Fresco', 'Tradicional'],
+            servicios: ['Estacionamiento', 'Accesibilidad'],
+            distancia: undefined
+        };
+    });
+};
+
+// Función para procesar datos de ferias CSV
+export const processFeriasCSVData = (csvData: string): Feria[] => {
+    const lines = csvData.split('\n').filter(line => line.trim());
+    const headers = lines[0].split(';');
+    const data = lines.slice(1);
+
+    return data.map((line, index) => {
+        const values = line.split(';');
+        const feria: any = {};
+        headers.forEach((header, i) => {
+            feria[header] = values[i];
+        });
+
+        // Mapear tipos de ferias a categorías coherentes
+        const tipoMapping: { [key: string]: string } = {
+            'MANUALIDADES Y ANTIGÜEDADES': 'Artesanías',
+            'LIBROS USADOS': 'Libros',
+            'ARTESANIAS': 'Artesanías',
+            'ANTIGÜEDADES': 'Antigüedades',
+            'FILATELIA Y NUMISMATICA': 'Coleccionismo'
+        };
+
+        const tipo = tipoMapping[feria.TIPO] || 'Feria';
+
+        // Procesar días de funcionamiento
+        const diasRaw = feria.DIAS || '';
+        const diasMapping: { [key: string]: string[] } = {
+            'SABADO, DOMINGOS Y FERIADOS': ['Sábado', 'Domingo'],
+            'MARTES A DOMINGO': ['Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
+            'MARTES A VIERNES': ['Martes', 'Miércoles', 'Jueves', 'Viernes'],
+            'JUEVES Y VIERNES / SABADO Y DOMINGOS': ['Jueves', 'Viernes', 'Sábado', 'Domingo']
+        };
+
+        const diasFuncionamiento = diasMapping[diasRaw] || ['Sábado', 'Domingo'];
+
+        return {
+            id: `feria_${feria.ID || index + 1}`,
+            nombre: feria.NOMBRE || 'Feria',
+            direccion: feria.DIRECCION || '',
+            lat: parseFloat(feria.LAT) || 0,
+            lng: parseFloat(feria.LNG) || 0,
+            tipo: tipo,
+            categoria: 'Ferias',
+            diasFuncionamiento,
+            horarios: {
+                apertura: '10:00',
+                cierre: '18:00'
+            },
+            productos: tipo === 'Artesanías' ? ['Artesanías', 'Manualidades', 'Antigüedades'] :
+                tipo === 'Libros' ? ['Libros', 'Revistas', 'Antigüedades'] :
+                    ['Productos Varios'],
+            descripcion: feria.OBSERVACIO || `Feria de ${tipo.toLowerCase()}`,
+            barrio: feria.BARRIO || '',
+            comuna: feria.COMUNA || '',
+            etiquetas: [tipo, 'Feria', 'Público'],
+            horarioTipo: 'tarde' as const,
+            frecuencia: 'semanal' as const,
+            especialidad: ['Tradicional', 'Local'],
+            servicios: ['Accesibilidad'],
+            distancia: undefined
+        };
+    });
+};
+
+// Función para procesar datos de espacios culturales
+export const processEspaciosCulturalesData = (jsonData: EspacioCulturalData[]): Feria[] => {
+    return jsonData.map((espacio) => {
+        return {
+            id: espacio.id,
+            nombre: espacio.nombre,
+            direccion: espacio.direccion,
+            lat: espacio.lat,
+            lng: espacio.lng,
+            tipo: espacio.tipo,
+            categoria: espacio.categoria,
+            diasFuncionamiento: espacio.diasFuncionamiento,
+            horarios: espacio.horarios,
+            productos: espacio.etiquetas,
+            descripcion: espacio.descripcion,
+            telefono: espacio.telefono,
+            barrio: espacio.barrio,
+            comuna: espacio.comuna,
+            etiquetas: espacio.etiquetas,
+            horarioTipo: 'todo_dia' as const,
+            frecuencia: 'semanal' as const,
+            especialidad: ['Cultural', 'Histórico'],
+            servicios: espacio.servicios,
+            distancia: undefined
+        };
+    });
+};
+
+// Función principal para unificar todos los datos
+export const unifyAllData = async (): Promise<Feria[]> => {
+    try {
+        // Cargar datos de mercados
+        const mercadosResponse = await fetch('/mercados.csv');
+        const mercadosCSV = await mercadosResponse.text();
+        const mercados = processMercadosData(mercadosCSV);
+
+        // Cargar datos de ferias CSV
+        const feriasResponse = await fetch('/ferias.csv');
+        const feriasCSV = await feriasResponse.text();
+        const ferias = processFeriasCSVData(feriasCSV);
+
+        // Cargar datos de espacios culturales
+        const espaciosResponse = await fetch('/espacios-culturales.json');
+        const espaciosData = await espaciosResponse.json();
+        const espacios = processEspaciosCulturalesData(espaciosData);
+
+        // Unificar todos los datos
+        const allData = [...mercados, ...ferias, ...espacios];
+
+        // Asignar IDs únicos si no los tienen
+        return allData.map((item, index) => ({
+            ...item,
+            id: item.id || `item_${index + 1}`
+        }));
+
+    } catch (error) {
+        console.error('Error al cargar datos:', error);
+        return [];
+    }
+};
+
+// Función para obtener los 10 puntos más cercanos
+export const getClosestPoints = (points: Feria[], userLat: number, userLng: number, count: number = 10): Feria[] => {
+    return points
+        .filter(point => point.distancia !== undefined)
+        .sort((a, b) => (a.distancia || 0) - (b.distancia || 0))
+        .slice(0, count);
+};
+
+// Función para filtrar por categoría
+export const filterByCategory = (points: Feria[], category: string): Feria[] => {
+    if (!category || category === 'Todos') {
+        return points;
+    }
+    return points.filter(point => point.categoria === category);
+};
+
+// Función para calcular distancia entre dos puntos
+export const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371e3; // Radio de la Tierra en metros
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lng2 - lng1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+        Math.cos(φ1) * Math.cos(φ2) *
+        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // Distancia en metros
 }; 

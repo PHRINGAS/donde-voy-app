@@ -1,0 +1,375 @@
+[
+    {
+        "id": "cult_001",
+        "nombre": "Teatro Colón",
+        "tipo": "Teatro",
+        "categoria": "Cultura",
+        "direccion": "Cerrito 628",
+        "lat": -34.5987,
+        "lng": -58.3815,
+        "barrio": "San Nicolás",
+        "comuna": "Comuna 1",
+        "descripcion": "Teatro lírico más importante de Argentina",
+        "horarios": {
+            "apertura": "09:00",
+            "cierre": "20:00"
+        },
+        "diasFuncionamiento": [
+            "Lunes",
+            "Martes",
+            "Miércoles",
+            "Jueves",
+            "Viernes",
+            "Sábado",
+            "Domingo"
+        ],
+        "servicios": [
+            "Visitas Guiadas",
+            "WiFi",
+            "Accesibilidad",
+            "Estacionamiento"
+        ],
+        "etiquetas": [
+            "Teatro",
+            "Ópera",
+            "Música Clásica",
+            "Histórico"
+        ],
+        "telefono": "011-4378-7100"
+    },
+    {
+        "id": "cult_002",
+        "nombre": "Museo Nacional de Bellas Artes",
+        "tipo": "Museo",
+        "categoria": "Cultura",
+        "direccion": "Av. del Libertador 1473",
+        "lat": -34.5892,
+        "lng": -58.3924,
+        "barrio": "Recoleta",
+        "comuna": "Comuna 2",
+        "descripcion": "Museo de arte más importante del país",
+        "horarios": {
+            "apertura": "11:00",
+            "cierre": "20:00"
+        },
+        "diasFuncionamiento": [
+            "Martes",
+            "Miércoles",
+            "Jueves",
+            "Viernes",
+            "Sábado",
+            "Domingo"
+        ],
+        "servicios": [
+            "WiFi",
+            "Accesibilidad",
+            "Cafetería",
+            "Tienda"
+        ],
+        "etiquetas": [
+            "Museo",
+            "Arte",
+            "Exposiciones",
+            "Gratis"
+        ],
+        "telefono": "011-5288-9900"
+    },
+    {
+        "id": "cult_003",
+        "nombre": "Centro Cultural Kirchner",
+        "tipo": "Centro Cultural",
+        "categoria": "Cultura",
+        "direccion": "Sarmiento 151",
+        "lat": -34.6037,
+        "lng": -58.3816,
+        "barrio": "San Nicolás",
+        "comuna": "Comuna 1",
+        "descripcion": "Centro cultural más grande de Latinoamérica",
+        "horarios": {
+            "apertura": "14:00",
+            "cierre": "22:00"
+        },
+        "diasFuncionamiento": [
+            "Miércoles",
+            "Jueves",
+            "Viernes",
+            "Sábado",
+            "Domingo"
+        ],
+        "servicios": [
+            "WiFi",
+            "Accesibilidad",
+            "Cafetería",
+            "Estacionamiento"
+        ],
+        "etiquetas": [
+            "Centro Cultural",
+            "Música",
+            "Teatro",
+            "Exposiciones"
+        ],
+        "telefono": "011-3754-9400"
+    },
+    {
+        "id": "bar_001",
+        "nombre": "Bar La Biela",
+        "tipo": "Bar",
+        "categoria": "Cultura",
+        "direccion": "Av. Quintana 600",
+        "lat": -34.5892,
+        "lng": -58.3924,
+        "barrio": "Recoleta",
+        "comuna": "Comuna 2",
+        "descripcion": "Bar histórico de Recoleta",
+        "horarios": {
+            "apertura": "07:00",
+            "cierre": "02:00"
+        },
+        "diasFuncionamiento": [
+            "Lunes",
+            "Martes",
+            "Miércoles",
+            "Jueves",
+            "Viernes",
+            "Sábado",
+            "Domingo"
+        ],
+        "servicios": [
+            "WiFi",
+            "Terraza",
+            "Café",
+            "Comida"
+        ],
+        "etiquetas": [
+            "Bar",
+            "Café",
+            "Histórico",
+            "Terraza"
+        ],
+        "telefono": "011-4804-0449"
+    },
+    {
+        "id": "bar_002",
+        "nombre": "Café Tortoni",
+        "tipo": "Café",
+        "categoria": "Cultura",
+        "direccion": "Av. de Mayo 825",
+        "lat": -34.6087,
+        "lng": -58.3815,
+        "barrio": "Monserrat",
+        "comuna": "Comuna 1",
+        "descripcion": "Café más antiguo de Argentina",
+        "horarios": {
+            "apertura": "08:00",
+            "cierre": "23:00"
+        },
+        "diasFuncionamiento": [
+            "Lunes",
+            "Martes",
+            "Miércoles",
+            "Jueves",
+            "Viernes",
+            "Sábado",
+            "Domingo"
+        ],
+        "servicios": [
+            "WiFi",
+            "Música en Vivo",
+            "Café",
+            "Comida"
+        ],
+        "etiquetas": [
+            "Café",
+            "Histórico",
+            "Tango",
+            "Literatura"
+        ],
+        "telefono": "011-4342-4328"
+    },
+    {
+        "id": "cult_004",
+        "nombre": "Museo de Arte Moderno de Buenos Aires",
+        "tipo": "Museo",
+        "categoria": "Cultura",
+        "direccion": "Av. San Juan 350",
+        "lat": -34.6207,
+        "lng": -58.3815,
+        "barrio": "San Telmo",
+        "comuna": "Comuna 1",
+        "descripcion": "Museo dedicado al arte moderno y contemporáneo",
+        "horarios": {
+            "apertura": "11:00",
+            "cierre": "19:00"
+        },
+        "diasFuncionamiento": [
+            "Martes",
+            "Miércoles",
+            "Jueves",
+            "Viernes",
+            "Sábado",
+            "Domingo"
+        ],
+        "servicios": [
+            "WiFi",
+            "Accesibilidad",
+            "Cafetería",
+            "Tienda"
+        ],
+        "etiquetas": [
+            "Museo",
+            "Arte Moderno",
+            "Exposiciones",
+            "Gratis"
+        ],
+        "telefono": "011-4361-6919"
+    },
+    {
+        "id": "bar_003",
+        "nombre": "Bar El Federal",
+        "tipo": "Bar",
+        "categoria": "Cultura",
+        "direccion": "Carlos Calvo 599",
+        "lat": -34.6207,
+        "lng": -58.3815,
+        "barrio": "San Telmo",
+        "comuna": "Comuna 1",
+        "descripcion": "Bar histórico de San Telmo",
+        "horarios": {
+            "apertura": "08:00",
+            "cierre": "02:00"
+        },
+        "diasFuncionamiento": [
+            "Lunes",
+            "Martes",
+            "Miércoles",
+            "Jueves",
+            "Viernes",
+            "Sábado",
+            "Domingo"
+        ],
+        "servicios": [
+            "WiFi",
+            "Comida",
+            "Café",
+            "Histórico"
+        ],
+        "etiquetas": [
+            "Bar",
+            "Histórico",
+            "San Telmo",
+            "Comida"
+        ],
+        "telefono": "011-4300-4313"
+    },
+    {
+        "id": "cult_005",
+        "nombre": "Teatro Nacional Cervantes",
+        "tipo": "Teatro",
+        "categoria": "Cultura",
+        "direccion": "Libertad 815",
+        "lat": -34.6037,
+        "lng": -58.3816,
+        "barrio": "San Nicolás",
+        "comuna": "Comuna 1",
+        "descripcion": "Teatro nacional de Argentina",
+        "horarios": {
+            "apertura": "10:00",
+            "cierre": "22:00"
+        },
+        "diasFuncionamiento": [
+            "Martes",
+            "Miércoles",
+            "Jueves",
+            "Viernes",
+            "Sábado",
+            "Domingo"
+        ],
+        "servicios": [
+            "WiFi",
+            "Accesibilidad",
+            "Estacionamiento"
+        ],
+        "etiquetas": [
+            "Teatro",
+            "Nacional",
+            "Drama",
+            "Comedia"
+        ],
+        "telefono": "011-4816-4224"
+    },
+    {
+        "id": "bar_004",
+        "nombre": "Bar El Gato Negro",
+        "tipo": "Bar",
+        "categoria": "Cultura",
+        "direccion": "Av. Corrientes 1669",
+        "lat": -34.6037,
+        "lng": -58.3816,
+        "barrio": "San Nicolás",
+        "comuna": "Comuna 1",
+        "descripcion": "Bar histórico de Corrientes",
+        "horarios": {
+            "apertura": "08:00",
+            "cierre": "01:00"
+        },
+        "diasFuncionamiento": [
+            "Lunes",
+            "Martes",
+            "Miércoles",
+            "Jueves",
+            "Viernes",
+            "Sábado",
+            "Domingo"
+        ],
+        "servicios": [
+            "WiFi",
+            "Café",
+            "Especias",
+            "Histórico"
+        ],
+        "etiquetas": [
+            "Bar",
+            "Café",
+            "Especias",
+            "Histórico"
+        ],
+        "telefono": "011-4374-1730"
+    },
+    {
+        "id": "cult_006",
+        "nombre": "Museo Evita",
+        "tipo": "Museo",
+        "categoria": "Cultura",
+        "direccion": "Lafinur 2988",
+        "lat": -34.5892,
+        "lng": -58.3924,
+        "barrio": "Palermo",
+        "comuna": "Comuna 14",
+        "descripcion": "Museo dedicado a Eva Perón",
+        "horarios": {
+            "apertura": "11:00",
+            "cierre": "19:00"
+        },
+        "diasFuncionamiento": [
+            "Martes",
+            "Miércoles",
+            "Jueves",
+            "Viernes",
+            "Sábado",
+            "Domingo"
+        ],
+        "servicios": [
+            "WiFi",
+            "Accesibilidad",
+            "Cafetería",
+            "Tienda"
+        ],
+        "etiquetas": [
+            "Museo",
+            "Histórico",
+            "Eva Perón",
+            "Política"
+        ],
+        "telefono": "011-4807-0306"
+    }
+]

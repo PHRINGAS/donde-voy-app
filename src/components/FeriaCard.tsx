@@ -38,14 +38,37 @@ const FeriaCard: React.FC<FeriaCardProps> = ({ feria, onViewDetails }) => {
     return null;
   };
 
+  // Función para obtener el color del borde según la categoría
+  const getBorderColor = (categoria: string) => {
+    const colors = {
+      'Mercados': 'border-l-blue-500',
+      'Ferias': 'border-l-orange-500',
+      'Cultura': 'border-l-purple-500'
+    };
+    return colors[categoria as keyof typeof colors] || 'border-l-gray-500';
+  };
+
+  // Función para obtener el icono de categoría
+  const getCategoryIcon = (categoria: string) => {
+    const icons = {
+      'Mercados': '🛒',
+      'Ferias': '🎪',
+      'Cultura': '🎭'
+    };
+    return icons[categoria as keyof typeof icons] || '📍';
+  };
+
   return (
-    <Card className="mb-4 hover:shadow-lg transition-shadow duration-200 border-l-4 border-l-orange-500">
+    <Card className={`mb-4 hover:shadow-lg transition-shadow duration-200 border-l-4 ${getBorderColor(feria.categoria)}`}>
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-3">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">
-              {feria.nombre}
-            </h3>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-lg">{getCategoryIcon(feria.categoria)}</span>
+              <h3 className="text-lg font-semibold text-gray-800">
+                {feria.nombre}
+              </h3>
+            </div>
             <div className="flex items-center text-gray-600 mb-2">
               <MapPin size={16} className="mr-2 text-orange-500" />
               <span className="text-sm">{feria.direccion}</span>
@@ -59,8 +82,8 @@ const FeriaCard: React.FC<FeriaCardProps> = ({ feria, onViewDetails }) => {
           <button
             onClick={() => toggleFavorite(feria.id)}
             className={`p-2 rounded-full transition-colors ${isLiked
-                ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+              ? 'text-red-500 bg-red-50 hover:bg-red-100'
+              : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
               }`}
           >
             <Heart size={20} fill={isLiked ? 'currentColor' : 'none'} />
@@ -71,6 +94,9 @@ const FeriaCard: React.FC<FeriaCardProps> = ({ feria, onViewDetails }) => {
         <div className="flex flex-wrap gap-2 mb-3">
           <Badge variant="secondary" className="bg-orange-100 text-orange-800">
             {feria.tipo}
+          </Badge>
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            {feria.categoria}
           </Badge>
           {feria.distancia && (
             <Badge variant="outline" className="text-green-600 border-green-200">

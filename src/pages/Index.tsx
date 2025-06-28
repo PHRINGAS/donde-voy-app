@@ -10,6 +10,7 @@ import MapView from '../components/MapView';
 import FavoritesList from '../components/FavoritesList';
 import ReminderSystem from '../components/ReminderSystem';
 import BottomNavigation from '../components/BottomNavigation';
+import CategoryFilter from '../components/CategoryFilter';
 import { AppProvider } from '../contexts/AppContext';
 import { toast } from "sonner";
 
@@ -58,7 +59,12 @@ const AppContent: React.FC = () => {
       case 'list':
       default:
         return (
-          <div className="flex-1 overflow-y-auto p-4 pb-20">
+          <div className="flex-1 overflow-y-auto pb-20">
+            {/* Filtro de categorías */}
+            <div className="p-4">
+              <CategoryFilter />
+            </div>
+
             {loading && (
               <div className="text-center py-8">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
@@ -67,20 +73,20 @@ const AppContent: React.FC = () => {
             )}
 
             {filteredFerias.length === 0 && !loading ? (
-              <div className="text-center py-12">
+              <div className="text-center py-12 px-4">
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                  No se encontraron ferias
+                  No se encontraron puntos
                 </h3>
                 <p className="text-gray-500">
-                  Intenta ajustar los filtros de búsqueda
+                  Intenta ajustar los filtros de búsqueda o cambiar de categoría
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="px-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-gray-800">
-                    Ferias disponibles ({filteredFerias.length})
+                    Puntos disponibles ({filteredFerias.length})
                   </h2>
                   {location && (
                     <span className="text-sm text-green-600 bg-green-50 px-3 py-1 rounded-full">
