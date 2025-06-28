@@ -1,5 +1,5 @@
-
 import { Feria } from '../types';
+import { loadFeriasFromGeoJSON } from '../utils/dataProcessor';
 
 // Datos de muestra de ferias urbanas
 export const feriasData: Feria[] = [
@@ -66,6 +66,34 @@ export const feriasData: Feria[] = [
   }
 ];
 
+// Función para obtener todas las ferias (muestra + GeoJSON)
+export const getAllFerias = async (): Promise<Feria[]> => {
+  try {
+    const geoJSONFerias = await loadFeriasFromGeoJSON();
+
+    // Combinar datos de muestra con datos del GeoJSON
+    // Usar un Set para evitar duplicados por ID
+    const allFeriasMap = new Map<string, Feria>();
+
+    // Agregar datos de muestra primero
+    feriasData.forEach(feria => {
+      allFeriasMap.set(feria.id, feria);
+    });
+
+    // Agregar datos del GeoJSON, evitando duplicados
+    geoJSONFerias.forEach(feria => {
+      if (!allFeriasMap.has(feria.id)) {
+        allFeriasMap.set(feria.id, feria);
+      }
+    });
+
+    return Array.from(allFeriasMap.values());
+  } catch (error) {
+    console.error('Error cargando todas las ferias:', error);
+    return feriasData; // Fallback a datos de muestra
+  }
+};
+
 export const tiposDeFeria = [
   'Artesanías',
   'Mercado',
@@ -81,5 +109,6 @@ export const diasSemana = [
 
 export const tiposProductos = [
   'Artesanías', 'Antigüedades', 'Libros', 'Comida', 'Frutas', 'Verduras',
-  'Carnes', 'Lácteos', 'Joyería', 'Cuero', 'Textiles', 'Especias', 'Música', 'Danza'
+  'Carnes', 'Lácteos', 'Joyería', 'Cuero', 'Textiles', 'Especias', 'Música', 'Danza',
+  'Frutas y Verduras', 'Pescadería', 'Panadería', 'Especias y Legumbres', 'Plantas', 'Mascotas', 'Limpieza'
 ];

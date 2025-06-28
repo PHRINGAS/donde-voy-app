@@ -1,73 +1,106 @@
-# Welcome to your Lovable project
+# Feria Finder Urbana App
 
-## Project info
+Una aplicación para encontrar y explorar ferias urbanas en la Ciudad de Buenos Aires.
 
-**URL**: https://lovable.dev/projects/9b77974e-ed19-4793-bb4a-08b447e8818b
+## Características
 
-## How can I edit this code?
+- 🗺️ Mapa interactivo con ubicaciones de ferias
+- 🔍 Búsqueda y filtros avanzados
+- ❤️ Sistema de favoritos
+- 📍 Geolocalización y cálculo de distancias
+- 📱 Diseño responsive
+- 🗄️ Base de datos en Supabase
 
-There are several ways of editing your application.
+## Datos de Ferias
 
-**Use Lovable**
+La aplicación incluye datos de ferias de dos fuentes:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9b77974e-ed19-4793-bb4a-08b447e8818b) and start prompting.
+1. **Datos de muestra**: Ferias populares de Buenos Aires
+2. **Datos del archivo GeoJSON**: Ferias Itinerantes de Abastecimiento Barrial (FIAB) del gobierno de la Ciudad
 
-Changes made via Lovable will be committed automatically to this repo.
+### Sincronización con Supabase
 
-**Use your preferred IDE**
+Para sincronizar los datos del archivo `ferias_geo.json` con la base de datos de Supabase:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. **Configurar Supabase**:
+   - Asegúrate de que el proyecto de Supabase esté configurado
+   - Ejecuta la migración para crear la tabla `ferias`:
+   ```bash
+   supabase db push
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+2. **Sincronizar datos**:
+   ```bash
+   npm run sync-ferias
+   ```
 
-Follow these steps:
+Este comando:
+- Carga los datos del archivo `ferias_geo.json`
+- Los procesa y convierte al formato de la aplicación
+- Los sincroniza con la base de datos de Supabase
+- Muestra estadísticas del proceso
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Estructura de Datos
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Los datos se procesan y normalizan para incluir:
 
-# Step 3: Install the necessary dependencies.
-npm i
+- **Información básica**: Nombre, dirección, coordenadas
+- **Horarios**: Días de funcionamiento y horarios de apertura/cierre
+- **Productos**: Tipos de productos disponibles
+- **Clasificación**: Tipo de feria (Mercado, Artesanías, etc.)
+- **Ubicación**: Barrio y comuna
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## Desarrollo
+
+### Instalación
+
+```bash
+npm install
+```
+
+### Ejecutar en desarrollo
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Construir para producción
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm run build
+```
 
-**Use GitHub Codespaces**
+## Tecnologías
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **Frontend**: React + TypeScript + Vite
+- **UI**: Tailwind CSS + shadcn/ui
+- **Mapas**: Leaflet
+- **Base de datos**: Supabase
+- **Estado**: React Context + localStorage
 
-## What technologies are used for this project?
+## Estructura del Proyecto
 
-This project is built with:
+```
+src/
+├── components/          # Componentes de UI
+├── contexts/           # Contextos de React
+├── data/              # Datos y procesamiento
+├── hooks/             # Hooks personalizados
+├── integrations/      # Integraciones (Supabase)
+├── pages/             # Páginas de la aplicación
+├── types/             # Tipos TypeScript
+├── utils/             # Utilidades
+└── main.tsx           # Punto de entrada
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Contribuir
 
-## How can I deploy this project?
+1. Fork el proyecto
+2. Crea una rama para tu feature
+3. Commit tus cambios
+4. Push a la rama
+5. Abre un Pull Request
 
-Simply open [Lovable](https://lovable.dev/projects/9b77974e-ed19-4793-bb4a-08b447e8818b) and click on Share -> Publish.
+## Licencia
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Este proyecto está bajo la Licencia MIT.

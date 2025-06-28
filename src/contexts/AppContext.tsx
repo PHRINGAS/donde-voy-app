@@ -1,7 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Feria, SearchFilters, UserLocation } from '../types';
-import { feriasData } from '../data/feriasData';
+import { feriasData, getAllFerias } from '../data/feriasData';
+import { feriasService } from '../integrations/supabase/feriasService';
 import { calculateDistance } from '../utils/distanceCalculator';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
@@ -11,6 +11,7 @@ interface AppContextType {
   userLocation: UserLocation | null;
   favorites: string[];
   searchFilters: SearchFilters;
+  loading: boolean;
   setSearchFilters: (filters: SearchFilters) => void;
   setUserLocation: (location: UserLocation | null) => void;
   toggleFavorite: (feriaId: string) => void;
@@ -24,9 +25,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [filteredFerias, setFilteredFerias] = useState<Feria[]>(feriasData);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({});
-  
+  const [loading, setLoading] = useState(true);
+
   // Usar localStorage para persistir favoritos
   const [favorites, setFavorites] = useLocalStorage<string[]>('feriando-favorites', []);
+
+  // Cargar datos de ferias al inicializar
+  useEffect(() => {
+    const loadFerias = async () => {
+      try {
+        setLoading(true);
+
+        // Intentar cargar desde Supabase primero
+        let allFerias: Feria[] = [];
+
+        try {
+          console.log('🔄 Intentando cargar ferias desde Supabase...');
+          allFerias = await feriasService.getAllFerias();
+
+          if (allFerias.length > 0) {
+            console.log(`✅ Se cargaron ${allFerias.length} ferias desde Supabase`);
+          } else {
+            throw new Error('No hay datos en Supabase');
+          }
+        } catch (supabaseError) {
+          console.log('⚠️  No se pudieron cargar datos desde Supabase, usando datos locales...');
+          console.error('Error Supabase:', supabaseError);
+
+          // Fallback a datos locales (muestra + GeoJSON)
+          allFerias = await getAllFerias();
+          console.log(`✅ Se cargaron ${allFerias.length} ferias desde datos locales`);
+        }
+
+        setFerias(allFerias);
+        setFilteredFerias(allFerias);
+
+      } catch (error) {
+        console.error('❌ Error cargando ferias:', error);
+        // Fallback final a datos de muestra
+        setFerias(feriasData);
+        setFilteredFerias(feriasData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFerias();
+  }, []);
 
   // Actualizar distancias cuando cambia la ubicación del usuario
   useEffect(() => {
@@ -49,28 +94,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let filtered = [...ferias];
 
     if (searchFilters.tipo) {
-      filtered = filtered.filter(feria => 
+      filtered = filtered.filter(feria =>
         feria.tipo.toLowerCase().includes(searchFilters.tipo!.toLowerCase())
       );
     }
 
     if (searchFilters.dia) {
-      filtered = filtered.filter(feria => 
+      filtered = filtered.filter(feria =>
         feria.diasFuncionamiento.includes(searchFilters.dia!)
       );
     }
 
     if (searchFilters.direccion) {
-      filtered = filtered.filter(feria => 
+      filtered = filtered.filter(feria =>
         feria.nombre.toLowerCase().includes(searchFilters.direccion!.toLowerCase()) ||
         feria.direccion.toLowerCase().includes(searchFilters.direccion!.toLowerCase())
       );
     }
 
     if (searchFilters.productos && searchFilters.productos.length > 0) {
-      filtered = filtered.filter(feria => 
-        searchFilters.productos!.some(producto => 
-          feria.productos.some(feriaProducto => 
+      filtered = filtered.filter(feria =>
+        searchFilters.productos!.some(producto =>
+          feria.productos.some(feriaProducto =>
             feriaProducto.toLowerCase().includes(producto.toLowerCase())
           )
         )
@@ -86,8 +131,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [searchFilters, ferias, userLocation]);
 
   const toggleFavorite = (feriaId: string) => {
-    setFavorites(prev => 
-      prev.includes(feriaId) 
+    setFavorites(prev =>
+      prev.includes(feriaId)
         ? prev.filter(id => id !== feriaId)
         : [...prev, feriaId]
     );
@@ -102,6 +147,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userLocation,
       favorites,
       searchFilters,
+      loading,
       setSearchFilters,
       setUserLocation,
       toggleFavorite,
