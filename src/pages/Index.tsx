@@ -43,16 +43,15 @@ const AppContent: React.FC = () => {
     switch (activeTab) {
       case 'map':
         return (
-          // Cambiado a h-full para ocupar la altura del padre flex-col
-          <div className="h-full relative">
+          // El mapa debe ocupar toda la altura disponible entre header y bottom nav
+          <div className="absolute inset-0">
             <MapView />
           </div>
         );
 
       case 'reminders':
         return (
-          // Este div tomará el espacio disponible y permitirá scroll interno
-          <div className="flex-1 overflow-y-auto">
+          <div className="h-full overflow-y-auto">
             <ReminderSystem />
           </div>
         );
@@ -60,8 +59,7 @@ const AppContent: React.FC = () => {
       case 'list':
       default:
         return (
-          // Este div tomará el espacio disponible y permitirá scroll interno
-          <div className="flex-1 overflow-y-auto">
+          <div className="h-full overflow-y-auto">
             {/* Filtro de categorías compacto */}
             <div className="p-3">
               <CategoryFilter />
@@ -85,7 +83,7 @@ const AppContent: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <div className="px-3 space-y-3">
+              <div className="px-3 space-y-3 pb-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-base font-semibold text-gray-800">
                     Lugares disponibles ({filteredFerias.length})
@@ -112,22 +110,22 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col overflow-hidden">
-      {/* Header fijo - Aumentado z-index para asegurar que esté sobre el mapa */}
-      <div className="fixed top-0 left-0 right-0 z-[1050]">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+      {/* Header fijo - Siempre visible */}
+      <div className="flex-shrink-0 z-[1050]">
         <Header
           onSearchClick={() => setShowSearch(true)}
           onLocationClick={handleLocationClick}
         />
       </div>
 
-      {/* Contenido principal con padding para header y bottom navigation */}
-      <div className="flex-1 pt-12 sm:pt-14 pb-14 flex flex-col">
+      {/* Contenido principal - Ocupa el espacio entre header y bottom nav */}
+      <div className="flex-1 relative overflow-hidden">
         {renderContent()}
       </div>
 
-      {/* Navegación inferior fija - Siempre visible por encima del mapa */}
-      <div className="fixed bottom-0 left-0 right-0 z-50">
+      {/* Navegación inferior fija - Siempre visible */}
+      <div className="flex-shrink-0 z-[1050]">
         <BottomNavigation
           activeTab={activeTab}
           onTabChange={setActiveTab}

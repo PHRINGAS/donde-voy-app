@@ -122,10 +122,56 @@ const MapView: React.FC = () => {
     return getClosestPoints(points, userLat, userLng, 10);
   };
 
-  // Función para crear popup persistente (SIMPLIFICADA PARA DEBUGGING)
+  // Función para crear popup persistente con información completa
   const createPersistentPopup = (point: Feria) => {
-    const popupContent = `<h3>${point.nombre}</h3><p>Test Pop-up</p><button onclick="this.closest('.leaflet-popup').style.display='none'">Close</button>`;
-    return popupContent;
+    const distanceText = point.distancia 
+      ? point.distancia < 1000 
+        ? `${Math.round(point.distancia)} m` 
+        : `${(point.distancia / 1000).toFixed(1)} km`
+      : '';
+
+    return `
+      <div style="padding: 12px; min-width: 250px; max-width: 300px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <h3 style="font-weight: 600; font-size: 16px; margin: 0; flex: 1;">${point.nombre}</h3>
+          <button onclick="this.closest('.leaflet-popup').style.display='none'" 
+                  style="background: #f3f4f6; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; margin-left: 8px; display: flex; align-items: center; justify-content: center;">
+            ✕
+          </button>
+        </div>
+        
+        <p style="color: #666; font-size: 14px; margin: 0 0 8px 0;">${point.direccion}</p>
+        
+        <div style="margin-bottom: 8px;">
+          <span style="background: #fed7aa; color: #c2410c; padding: 4px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px;">
+            ${point.tipo}
+          </span>
+          <span style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 12px; font-size: 12px;">
+            ${point.categoria}
+          </span>
+        </div>
+        
+        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+          <strong>Horarios:</strong> ${point.horarios.apertura} - ${point.horarios.cierre}
+        </div>
+        
+        <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+          <strong>Días:</strong> ${point.diasFuncionamiento.join(', ')}
+        </div>
+        
+        ${distanceText ? `
+          <div style="color: #2563eb; font-size: 12px; font-weight: 500; margin-bottom: 8px;">
+            📍 ${distanceText} de distancia
+          </div>
+        ` : ''}
+        
+        ${point.descripcion ? `
+          <div style="font-size: 12px; color: #666; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+            ${point.descripcion}
+          </div>
+        ` : ''}
+      </div>
+    `;
   };
 
   // Inicializar mapa
@@ -219,13 +265,15 @@ const MapView: React.FC = () => {
         icon: createPointIcon(markerColor, markerSize, point.categoria)
       }).addTo(map.current!);
 
-      // Crear popup persistente
+      // Crear popup persistente con información completa
       const popupContent = createPersistentPopup(point);
       const popup = L.popup({
         closeButton: false, // Deshabilitamos el botón de cierre por defecto
         autoClose: false,   // No cerrar automáticamente
         closeOnClick: false, // No cerrar al hacer clic en el mapa
-        closeOnEscapeKey: true // Permitir cerrar con Escape
+        closeOnEscapeKey: true, // Permitir cerrar con Escape
+        maxWidth: 300,
+        className: 'custom-popup'
       }).setContent(popupContent);
 
       marker.bindPopup(popup);
@@ -262,19 +310,15 @@ const MapView: React.FC = () => {
   }, [filteredFerias, userLocation, isUserMovingMap, currentOpenPopup]);
 
   return (
-    <div className="h-full relative">
-      {/* Contenedor del mapa con altura específica que respeta el menú inferior */}
+    <div className="h-full w-full relative">
+      {/* Contenedor del mapa que ocupa toda la altura disponible */}
       <div 
         ref={mapContainer} 
-        className="w-full absolute inset-0"
-        style={{ 
-          height: '100%', // Ocupa toda la altura del contenedor padre relativo
-          minHeight: '300px' 
-        }} 
+        className="absolute inset-0 w-full h-full"
       />
 
       {/* Contador de puntos */}
-      <div className="absolute bottom-16 left-3 bg-white bg-opacity-90 rounded-lg px-2.5 py-1.5 shadow-lg z-[1000]">
+      <div className="absolute bottom-4 left-3 bg-white bg-opacity-90 rounded-lg px-2.5 py-1.5 shadow-lg z-[1000]">
         <span className="text-xs font-medium text-gray-700">
           {userLocation && filteredFerias.length > 10 
             ? `10 de ${filteredFerias.length} puntos` 
@@ -283,7 +327,7 @@ const MapView: React.FC = () => {
       </div>
 
       {/* Botón para centrar en usuario */}
-      <div className="absolute bottom-16 right-3 z-[1000]">
+      <div className="absolute bottom-4 right-3 z-[1000]">
         <Button
           onClick={centerOnUser}
           size="sm"

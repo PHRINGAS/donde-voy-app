@@ -101,7 +101,7 @@ All colors MUST be HSL.
   /* Estilos para la app móvil */
   html, body, #root {
     height: 100%;
-    overflow-x: hidden;
+    overflow: hidden; /* Prevenir scroll en el body */
   }
   
   /* Mejoras para dispositivos móviles */
@@ -161,6 +161,21 @@ All colors MUST be HSL.
   /* Smooth scrolling para elementos horizontales */
   .smooth-scroll {
     scroll-behavior: smooth;
+  }
+
+  /* Estilos para popups del mapa */
+  .custom-popup .leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .custom-popup .leaflet-popup-content {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .custom-popup .leaflet-popup-tip {
+    background: white;
   }
 }
 
