@@ -12,11 +12,11 @@ const FloatingControls: React.FC<FloatingControlsProps> = ({
 }) => {
   return (
     <>
-      {/* Búsqueda flotante */}
+      {/* Búsqueda flotante con placeholder actualizado */}
       <div className="floating-search">
         <input 
           type="text" 
-          placeholder="Buscar lugares, direcciones..."
+          placeholder="¿Dónde voy?"
           onClick={onSearchClick}
           readOnly
         />

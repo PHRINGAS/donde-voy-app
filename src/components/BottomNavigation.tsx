@@ -14,10 +14,11 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
 }) => {
   return (
     <nav className="bottom-navigation">
-      <div className="flex justify-around items-center h-full px-2">
+      {/* DISTRIBUCIÓN EQUIDISTANTE PERFECTA */}
+      <div className="flex justify-around items-center h-full w-full max-w-500px mx-auto px-4">
         <button
           onClick={() => onTabChange('map')}
-          className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all ${
+          className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all flex-1 max-w-20 ${
             activeTab === 'map'
               ? 'text-orange-600 bg-orange-50 active'
               : 'text-gray-500 hover:text-gray-700'
@@ -31,7 +32,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         
         <button
           onClick={() => onTabChange('list')}
-          className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all ${
+          className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all flex-1 max-w-20 ${
             activeTab === 'list'
               ? 'text-orange-600 bg-orange-50 active'
               : 'text-gray-500 hover:text-gray-700'
@@ -45,7 +46,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
 
         <button
           onClick={() => onTabChange('favorites')}
-          className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all relative ${
+          className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all relative flex-1 max-w-20 ${
             activeTab === 'favorites'
               ? 'text-red-600 bg-red-50 active'
               : 'text-gray-500 hover:text-red-600'
@@ -64,7 +65,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
 
         <button
           onClick={() => onTabChange('reminders')}
-          className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all ${
+          className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all flex-1 max-w-20 ${
             activeTab === 'reminders'
               ? 'text-orange-600 bg-orange-50 active'
               : 'text-gray-500 hover:text-gray-700'

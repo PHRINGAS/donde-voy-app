@@ -119,12 +119,12 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* Campo de búsqueda prominente */}
+          {/* Campo de búsqueda prominente con placeholder actualizado */}
           <div className="px-4 py-4 bg-gradient-to-r from-orange-50 to-orange-100 border-b border-orange-200">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-orange-500" size={18} />
               <Input
-                placeholder="Buscar lugares, direcciones..."
+                placeholder="¿Dónde voy?"
                 value={searchValue}
                 onChange={(e) => {
                   setSearchValue(e.target.value);
@@ -312,7 +312,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {/* Otros tabs con diseño mejorado... */}
+            {/* Tab Productos */}
             {activeTab === 'productos' && (
               <div>
                 <label className="block text-sm font-bold text-gray-800 mb-4">
@@ -340,7 +340,125 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {/* Resto de tabs... */}
+            {/* Tab Ubicación */}
+            {activeTab === 'ubicacion' && (
+              <div className="space-y-6">
+                {/* Barrio */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-800 mb-3">
+                    Barrio
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                    {ETIQUETAS_SISTEMA.barrios.map(barrio => (
+                      <Badge
+                        key={barrio}
+                        variant={isSelected('barrio', barrio) ? "default" : "outline"}
+                        className={`cursor-pointer ${isSelected('barrio', barrio)
+                            ? 'bg-orange-500 hover:bg-orange-600'
+                            : 'hover:bg-orange-50'
+                          }`}
+                        onClick={() => handleMultiSelect('barrio', barrio)}
+                      >
+                        {barrio}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Comuna */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-800 mb-3">
+                    Comuna
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                    {ETIQUETAS_SISTEMA.comunas.map(comuna => (
+                      <Badge
+                        key={comuna}
+                        variant={isSelected('comuna', comuna) ? "default" : "outline"}
+                        className={`cursor-pointer ${isSelected('comuna', comuna)
+                            ? 'bg-orange-500 hover:bg-orange-600'
+                            : 'hover:bg-orange-50'
+                          }`}
+                        onClick={() => handleMultiSelect('comuna', comuna)}
+                      >
+                        {comuna}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab Especialidades */}
+            {activeTab === 'especialidades' && (
+              <div className="space-y-6">
+                {/* Especialidades */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-800 mb-3">
+                    Especialidades
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                    {ETIQUETAS_SISTEMA.especialidades.map(especialidad => (
+                      <Badge
+                        key={especialidad}
+                        variant={isSelected('especialidad', especialidad) ? "default" : "outline"}
+                        className={`cursor-pointer ${isSelected('especialidad', especialidad)
+                            ? 'bg-green-500 hover:bg-green-600'
+                            : 'hover:bg-green-50'
+                          }`}
+                        onClick={() => handleMultiSelect('especialidad', especialidad)}
+                      >
+                        {especialidad}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Servicios */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-800 mb-3">
+                    Servicios disponibles
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                    {ETIQUETAS_SISTEMA.servicios.map(servicio => (
+                      <Badge
+                        key={servicio}
+                        variant={isSelected('servicios', servicio) ? "default" : "outline"}
+                        className={`cursor-pointer ${isSelected('servicios', servicio)
+                            ? 'bg-blue-500 hover:bg-blue-600'
+                            : 'hover:bg-blue-50'
+                          }`}
+                        onClick={() => handleMultiSelect('servicios', servicio)}
+                      >
+                        {servicio}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Filtros activos */}
+            {Object.keys(localFilters).length > 0 && (
+              <div className="pt-4 border-t border-gray-200">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Filtros activos:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(localFilters).map(([key, value]) => {
+                    if (!value || (Array.isArray(value) && value.length === 0)) return null;
+                    const displayValue = Array.isArray(value) ? value.join(', ') : value;
+                    return (
+                      <Badge key={key} variant="secondary" className="text-xs">
+                        {key}: {displayValue}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
