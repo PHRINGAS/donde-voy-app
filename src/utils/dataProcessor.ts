@@ -382,9 +382,24 @@ export const processFeriasCSVData = (csvData: string): Feria[] => {
 
         const diasFuncionamiento = diasMapping[diasRaw] || ['Sábado', 'Domingo'];
 
+        let nombreProcesado = feria.NOMBRE || 'Feria';
+        const originalNombre = feria.NOMBRE || '';
+        if (originalNombre.toUpperCase().startsWith('FIAB')) {
+            const match = originalNombre.match(/FIAB\s*(\d+)/i);
+            if (match && match[1]) {
+                nombreProcesado = `Feria ${match[1]}`;
+            } else {
+                // Fallback if FIAB but no number found, or a more generic name.
+                // For now, let's use a more descriptive FIAB name if number extraction fails,
+                // or simply "Feria Itinerante" and log it.
+                console.warn(`FIAB item '${originalNombre}' could not extract number. Using generic name.`);
+                nombreProcesado = `Feria Itinerante ${feria.ID || index + 1}`; // Make it somewhat unique
+            }
+        }
+
         return {
             id: `feria_${feria.ID || index + 1}`,
-            nombre: feria.NOMBRE || 'Feria',
+            nombre: nombreProcesado,
             direccion: feria.DIRECCION || '',
             lat: parseFloat(feria.LAT) || 0,
             lng: parseFloat(feria.LNG) || 0,

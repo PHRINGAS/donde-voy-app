@@ -29,16 +29,16 @@ const Header: React.FC<HeaderProps> = ({ onSearchClick, onLocationClick }) => {
           {/* Logo y título */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 className="text-xl font-bold text-orange-600">
+              {/* Typography updated: larger, tighter tracking, semibold, responsive size */}
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-orange-600">
                 🤔 Donde Voy?
               </h1>
             </div>
-            <div className="ml-4 text-sm text-gray-500">
-              Descubrí a dónde ir en Buenos Aires
-            </div>
+            {/* Subtitle removed */}
           </div>
 
-          {/* Estadísticas rápidas */}
+          {/* Estadísticas rápidas REMOVED */}
+          {/*
           <div className="hidden md:flex items-center space-x-4 text-sm text-gray-600">
             <span className="flex items-center">
               <MapPin size={14} className="mr-1" />
@@ -51,6 +51,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchClick, onLocationClick }) => {
             <span>•</span>
             <span>{tiposUnicos} tipos</span>
           </div>
+           */}
 
           {/* Botones de acción */}
           <div className="flex items-center space-x-2">
@@ -191,10 +192,10 @@ const Header: React.FC<HeaderProps> = ({ onSearchClick, onLocationClick }) => {
             <Button
               onClick={onSearchClick}
               size="sm"
-              className="bg-orange-500 hover:bg-orange-600 flex items-center gap-2"
+              className="bg-orange-600 hover:bg-orange-700 text-white"
             >
               <Search size={16} />
-              <span className="hidden md:inline">Buscar</span>
+              <span className="hidden md:inline ml-2">Buscar</span>
             </Button>
           </div>
         </div>

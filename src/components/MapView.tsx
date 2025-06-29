@@ -374,30 +374,9 @@ const MapView: React.FC = () => {
     <div className="h-full relative">
       <div ref={mapContainer} className="w-full h-full" style={{ minHeight: '400px' }} />
 
-      {/* Leyenda de colores */}
-      <div className="absolute top-4 left-4 bg-white bg-opacity-90 rounded-lg p-3 shadow-lg max-w-xs z-[1000]">
-        <h4 className="font-semibold text-sm mb-2">Categorías</h4>
-        <div className="space-y-1">
-          {Object.entries({
-            'Mercados': '#4ECDC4',
-            'Ferias': '#FF6B6B',
-            'Cultura': '#9B59B6'
-          }).map(([categoria, color]) => (
-            <div key={categoria} className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full border border-white shadow-sm"
-                style={{ backgroundColor: color }}
-              />
-              <span className="text-xs text-gray-700">{categoria}</span>
-            </div>
-          ))}
-        </div>
-        <div className="mt-2 pt-2 border-t border-gray-200">
-          <p className="text-xs text-gray-600">
-            <strong>🎯</strong> Los 10 puntos más cercanos se muestran en tamaño completo
-          </p>
-        </div>
-      </div>
+      {/* Leyenda de colores REMOVED as per user request for less intrusive reference.
+          Category info is on markers (icon/color) and in CategoryFilter.
+      */}
 
       {/* Contador de puntos */}
       <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 rounded-lg px-3 py-2 shadow-lg z-[1000]">
