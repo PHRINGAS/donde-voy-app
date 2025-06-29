@@ -157,6 +157,11 @@ All colors MUST be HSL.
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Smooth scrolling para elementos horizontales */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+  }
 }
 
 @layer components {
