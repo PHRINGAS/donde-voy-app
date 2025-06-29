@@ -49,59 +49,61 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[1001] flex"> {/* Main backdrop */}
-      <div className="bg-white w-full max-w-md ml-auto h-full flex flex-col"> {/* Panel: flex-col for sticky header + scrollable content */}
-        {/* Sticky Header Section (Title + Tabs) */}
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[1001] flex">
+      <div className="bg-white w-full max-w-md ml-auto h-full flex flex-col">
+        {/* Header compacto */}
         <div className="sticky top-0 z-10 bg-white shadow-sm">
-          {/* Title/Close Part */}
-          <div className="p-4 border-b border-gray-200">
+          {/* Título reducido */}
+          <div className="p-3 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-800">Buscar Lugares</h2>
+              <h2 className="text-lg font-bold text-gray-800">Buscar Lugares</h2>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
           </div>
 
-          {/* Tabs Navigation Part */}
-          <div className="flex border-b border-gray-200">
-            {[
-              { id: 'general', label: 'General', icon: Search },
-              { id: 'productos', label: 'Productos', icon: Tag },
-              { id: 'ubicacion', label: 'Ubicación', icon: MapPin },
-              { id: 'especialidades', label: 'Especialidades', icon: Star }
-            ].map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id as any)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors ${activeTab === id
-                    ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-              >
-                <Icon size={16} />
-                {label}
-              </button>
-            ))}
+          {/* Tabs con scroll horizontal */}
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex border-b border-gray-200 min-w-max">
+              {[
+                { id: 'general', label: 'General', icon: Search },
+                { id: 'productos', label: 'Productos', icon: Tag },
+                { id: 'ubicacion', label: 'Ubicación', icon: MapPin },
+                { id: 'especialidades', label: 'Especialidades', icon: Star }
+              ].map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id as any)}
+                  className={`flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-medium transition-colors whitespace-nowrap ${activeTab === id
+                      ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50'
+                      : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                >
+                  <Icon size={14} />
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Scrollable Content Section */}
+        {/* Contenido scrolleable */}
         <div className="flex-1 overflow-y-auto">
-          <div className="p-4 space-y-6">
+          <div className="p-3 space-y-4">
             {/* Tab General */}
             {activeTab === 'general' && (
-              <div className="space-y-6">
-                {/* Búsqueda por dirección */}
+              <div className="space-y-4">
+                {/* Campo de búsqueda reducido */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
                     Buscar por dirección o nombre
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                    <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
                     <Input
                       placeholder="Ej: San Telmo, Recoleta..."
                       value={localFilters.direccion || ''}
@@ -109,14 +111,14 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                         ...localFilters,
                         direccion: e.target.value || undefined
                       })}
-                      className="pl-10"
+                      className="pl-8 h-9 text-sm"
                     />
                   </div>
                 </div>
 
                 {/* Tipo de lugar */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
                     Tipo de lugar
                   </label>
                   <Select
@@ -126,10 +128,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                       tipo: value || undefined
                     })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm">
                       <SelectValue placeholder="Seleccionar tipo de lugar" />
                     </SelectTrigger>
-                    <SelectContent className="z-[1002]"> {/* Ensure dropdown is above panel backdrop */}
+                    <SelectContent className="z-[1002]">
                       {ETIQUETAS_SISTEMA.tipos.map(tipo => (
                         <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
                       ))}
@@ -139,7 +141,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
 
                 {/* Día de funcionamiento */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
                     Día de funcionamiento
                   </label>
                   <Select
@@ -149,10 +151,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                       dia: value || undefined
                     })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm">
                       <SelectValue placeholder="Seleccionar día" />
                     </SelectTrigger>
-                    <SelectContent className="z-[1002]"> {/* Ensure dropdown is above panel backdrop */}
+                    <SelectContent className="z-[1002]">
                       {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(dia => (
                         <SelectItem key={dia} value={dia}>{dia}</SelectItem>
                       ))}
@@ -162,7 +164,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
 
                 {/* Horario */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
                     Horario preferido
                   </label>
                   <Select
@@ -172,10 +174,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                       horarioTipo: value as any || undefined
                     })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm">
                       <SelectValue placeholder="Seleccionar horario" />
                     </SelectTrigger>
-                    <SelectContent className="z-[1002]"> {/* Ensure dropdown is above panel backdrop */}
+                    <SelectContent className="z-[1002]">
                       <SelectItem value="mañana">Mañana (8:00-14:00)</SelectItem>
                       <SelectItem value="tarde">Tarde (14:00-20:00)</SelectItem>
                       <SelectItem value="noche">Noche (20:00-00:00)</SelectItem>
@@ -186,7 +188,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
 
                 {/* Distancia máxima */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
                     Distancia máxima (km)
                   </label>
                   <Input
@@ -197,6 +199,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                       ...localFilters,
                       distanciaMaxima: e.target.value ? parseInt(e.target.value) * 1000 : undefined
                     })}
+                    className="h-9 text-sm"
                   />
                 </div>
               </div>
@@ -204,22 +207,23 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
 
             {/* Tab Productos */}
             {activeTab === 'productos' && (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-xs font-medium text-gray-700 mb-2">
                     Productos disponibles
                   </label>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                  <div className="space-y-1.5 max-h-64 overflow-y-auto">
                     {ETIQUETAS_SISTEMA.productos.map(producto => (
                       <div key={producto} className="flex items-center space-x-2">
                         <Checkbox
                           id={producto}
                           checked={isSelected('productos', producto)}
                           onCheckedChange={() => handleMultiSelect('productos', producto)}
+                          className="h-4 w-4"
                         />
                         <label
                           htmlFor={producto}
-                          className="text-sm text-gray-700 cursor-pointer flex-1"
+                          className="text-xs text-gray-700 cursor-pointer flex-1"
                         >
                           {producto}
                         </label>
@@ -232,50 +236,54 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
 
             {/* Tab Ubicación */}
             {activeTab === 'ubicacion' && (
-              <div className="space-y-6">
-                {/* Barrio */}
+              <div className="space-y-4">
+                {/* Barrio con scroll horizontal */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-xs font-medium text-gray-700 mb-2">
                     Barrio
                   </label>
-                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                    {ETIQUETAS_SISTEMA.barrios.map(barrio => (
-                      <Badge
-                        key={barrio}
-                        variant={isSelected('barrio', barrio) ? "default" : "outline"}
-                        className={`cursor-pointer ${isSelected('barrio', barrio)
-                            ? 'bg-orange-500 hover:bg-orange-600'
-                            : 'hover:bg-orange-50'
-                          }`}
-                        onClick={() => handleMultiSelect('barrio', barrio)}
-                      >
-                        {barrio}
-                      </Badge>
-                    ))}
+                  <div className="overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-2 pb-2 min-w-max">
+                      {ETIQUETAS_SISTEMA.barrios.map(barrio => (
+                        <Badge
+                          key={barrio}
+                          variant={isSelected('barrio', barrio) ? "default" : "outline"}
+                          className={`cursor-pointer text-xs whitespace-nowrap ${isSelected('barrio', barrio)
+                              ? 'bg-orange-500 hover:bg-orange-600'
+                              : 'hover:bg-orange-50'
+                            }`}
+                          onClick={() => handleMultiSelect('barrio', barrio)}
+                        >
+                          {barrio}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 <Separator />
 
-                {/* Comuna */}
+                {/* Comuna con scroll horizontal */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-xs font-medium text-gray-700 mb-2">
                     Comuna
                   </label>
-                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                    {ETIQUETAS_SISTEMA.comunas.map(comuna => (
-                      <Badge
-                        key={comuna}
-                        variant={isSelected('comuna', comuna) ? "default" : "outline"}
-                        className={`cursor-pointer ${isSelected('comuna', comuna)
-                            ? 'bg-orange-500 hover:bg-orange-600'
-                            : 'hover:bg-orange-50'
-                          }`}
-                        onClick={() => handleMultiSelect('comuna', comuna)}
-                      >
-                        {comuna}
-                      </Badge>
-                    ))}
+                  <div className="overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-2 pb-2 min-w-max">
+                      {ETIQUETAS_SISTEMA.comunas.map(comuna => (
+                        <Badge
+                          key={comuna}
+                          variant={isSelected('comuna', comuna) ? "default" : "outline"}
+                          className={`cursor-pointer text-xs whitespace-nowrap ${isSelected('comuna', comuna)
+                              ? 'bg-orange-500 hover:bg-orange-600'
+                              : 'hover:bg-orange-50'
+                            }`}
+                          onClick={() => handleMultiSelect('comuna', comuna)}
+                        >
+                          {comuna}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -283,50 +291,54 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
 
             {/* Tab Especialidades */}
             {activeTab === 'especialidades' && (
-              <div className="space-y-6">
-                {/* Especialidades */}
+              <div className="space-y-4">
+                {/* Especialidades con scroll horizontal */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-xs font-medium text-gray-700 mb-2">
                     Especialidades
                   </label>
-                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                    {ETIQUETAS_SISTEMA.especialidades.map(especialidad => (
-                      <Badge
-                        key={especialidad}
-                        variant={isSelected('especialidad', especialidad) ? "default" : "outline"}
-                        className={`cursor-pointer ${isSelected('especialidad', especialidad)
-                            ? 'bg-green-500 hover:bg-green-600'
-                            : 'hover:bg-green-50'
-                          }`}
-                        onClick={() => handleMultiSelect('especialidad', especialidad)}
-                      >
-                        {especialidad}
-                      </Badge>
-                    ))}
+                  <div className="overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-2 pb-2 min-w-max">
+                      {ETIQUETAS_SISTEMA.especialidades.map(especialidad => (
+                        <Badge
+                          key={especialidad}
+                          variant={isSelected('especialidad', especialidad) ? "default" : "outline"}
+                          className={`cursor-pointer text-xs whitespace-nowrap ${isSelected('especialidad', especialidad)
+                              ? 'bg-green-500 hover:bg-green-600'
+                              : 'hover:bg-green-50'
+                            }`}
+                          onClick={() => handleMultiSelect('especialidad', especialidad)}
+                        >
+                          {especialidad}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 <Separator />
 
-                {/* Servicios */}
+                {/* Servicios con scroll horizontal */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-xs font-medium text-gray-700 mb-2">
                     Servicios disponibles
                   </label>
-                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                    {ETIQUETAS_SISTEMA.servicios.map(servicio => (
-                      <Badge
-                        key={servicio}
-                        variant={isSelected('servicios', servicio) ? "default" : "outline"}
-                        className={`cursor-pointer ${isSelected('servicios', servicio)
-                            ? 'bg-blue-500 hover:bg-blue-600'
-                            : 'hover:bg-blue-50'
-                          }`}
-                        onClick={() => handleMultiSelect('servicios', servicio)}
-                      >
-                        {servicio}
-                      </Badge>
-                    ))}
+                  <div className="overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-2 pb-2 min-w-max">
+                      {ETIQUETAS_SISTEMA.servicios.map(servicio => (
+                        <Badge
+                          key={servicio}
+                          variant={isSelected('servicios', servicio) ? "default" : "outline"}
+                          className={`cursor-pointer text-xs whitespace-nowrap ${isSelected('servicios', servicio)
+                              ? 'bg-blue-500 hover:bg-blue-600'
+                              : 'hover:bg-blue-50'
+                            }`}
+                          onClick={() => handleMultiSelect('servicios', servicio)}
+                        >
+                          {servicio}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -334,9 +346,9 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
 
             {/* Filtros activos */}
             {Object.keys(localFilters).length > 0 && (
-              <div className="pt-4 border-t border-gray-200">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Filtros activos:</h4>
-                <div className="flex flex-wrap gap-2">
+              <div className="pt-3 border-t border-gray-200">
+                <h4 className="text-xs font-medium text-gray-700 mb-2">Filtros activos:</h4>
+                <div className="flex flex-wrap gap-1.5">
                   {Object.entries(localFilters).map(([key, value]) => {
                     if (!value || (Array.isArray(value) && value.length === 0)) return null;
                     const displayValue = Array.isArray(value) ? value.join(', ') : value;
@@ -350,18 +362,18 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {/* Botones de acción */}
-            <div className="flex space-x-3 pt-4">
+            {/* Botones de acción compactos */}
+            <div className="flex space-x-2 pt-3">
               <Button
                 onClick={handleClearFilters}
                 variant="outline"
-                className="flex-1"
+                className="flex-1 h-9 text-sm"
               >
                 Limpiar
               </Button>
               <Button
                 onClick={handleApplyFilters}
-                className="flex-1 bg-orange-500 hover:bg-orange-600"
+                className="flex-1 bg-orange-500 hover:bg-orange-600 h-9 text-sm"
               >
                 Aplicar
               </Button>

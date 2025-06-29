@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -147,6 +146,16 @@ All colors MUST be HSL.
   
   ::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
+  }
+
+  /* Ocultar scrollbar horizontal en elementos específicos */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 

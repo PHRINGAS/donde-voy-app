@@ -24,47 +24,29 @@ const Header: React.FC<HeaderProps> = ({ onSearchClick, onLocationClick }) => {
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo y título */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-12 sm:h-14">
+          {/* Logo y título - Reducido */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              {/* Typography updated: larger, tighter tracking, semibold, responsive size */}
-              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-orange-600">
+              <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-orange-600">
                 🤔 Donde Voy?
               </h1>
             </div>
-            {/* Subtitle removed */}
           </div>
 
-          {/* Estadísticas rápidas REMOVED */}
-          {/*
-          <div className="hidden md:flex items-center space-x-4 text-sm text-gray-600">
-            <span className="flex items-center">
-              <MapPin size={14} className="mr-1" />
-              {feriasFiltradas} de {totalFerias} lugares
-            </span>
-            <span>•</span>
-            <span>{barriosUnicos} barrios</span>
-            <span>•</span>
-            <span>{comunasUnicas} comunas</span>
-            <span>•</span>
-            <span>{tiposUnicos} tipos</span>
-          </div>
-           */}
-
-          {/* Botones de acción */}
-          <div className="flex items-center space-x-2">
-            {/* Botón de estadísticas */}
+          {/* Botones de acción - Compactados */}
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* Botón de estadísticas - Solo en desktop */}
             <Dialog>
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="hidden sm:flex items-center gap-2"
+                  className="hidden sm:flex items-center gap-2 h-8 px-2"
                 >
-                  <Info size={16} />
-                  <span className="hidden md:inline">Estadísticas</span>
+                  <Info size={14} />
+                  <span className="hidden md:inline text-xs">Stats</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -177,25 +159,25 @@ const Header: React.FC<HeaderProps> = ({ onSearchClick, onLocationClick }) => {
               </DialogContent>
             </Dialog>
 
-            {/* Botón de ubicación */}
+            {/* Botón de ubicación - Compactado */}
             <Button
               onClick={onLocationClick}
               variant="outline"
               size="sm"
-              className="flex items-center gap-2"
+              className="flex items-center gap-1 h-8 px-2"
             >
-              <MapPin size={16} />
-              <span className="hidden md:inline">Mi ubicación</span>
+              <MapPin size={14} />
+              <span className="hidden sm:inline text-xs">Ubicación</span>
             </Button>
 
-            {/* Botón de búsqueda */}
+            {/* Botón de búsqueda - Compactado */}
             <Button
               onClick={onSearchClick}
               size="sm"
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              className="bg-orange-600 hover:bg-orange-700 text-white h-8 px-2"
             >
-              <Search size={16} />
-              <span className="hidden md:inline ml-2">Buscar</span>
+              <Search size={14} />
+              <span className="hidden sm:inline ml-1 text-xs">Buscar</span>
             </Button>
           </div>
         </div>

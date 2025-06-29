@@ -26,7 +26,6 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     if (location) {
       setUserLocation(location);
-      // toast.success("Ubicación detectada correctamente"); // Removed as per user request (recurring and annoying)
     } else if (error) {
       toast.error(`Error de ubicación: ${error}`);
     }
@@ -34,8 +33,6 @@ const AppContent: React.FC = () => {
 
   const handleLocationClick = () => {
     if (location) {
-      // Consider if a toast is needed here for manual updates, or if UI feedback is sufficient.
-      // For now, let's keep it to confirm the action.
       toast.success("Ubicación actualizada");
     } else {
       toast.error("No se pudo obtener la ubicación");
@@ -46,14 +43,14 @@ const AppContent: React.FC = () => {
     switch (activeTab) {
       case 'map':
         return (
-          <div className="flex-1 pb-20">
+          <div className="flex-1 pb-16">
             <MapView />
           </div>
         );
 
       case 'reminders':
         return (
-          <div className="flex-1 overflow-y-auto pb-20">
+          <div className="flex-1 overflow-y-auto pb-16">
             <ReminderSystem />
           </div>
         );
@@ -61,9 +58,9 @@ const AppContent: React.FC = () => {
       case 'list':
       default:
         return (
-          <div className="flex-1 overflow-y-auto pb-20">
-            {/* Filtro de categorías */}
-            <div className="p-4">
+          <div className="flex-1 overflow-y-auto pb-16">
+            {/* Filtro de categorías compacto */}
+            <div className="p-3">
               <CategoryFilter />
             </div>
 
@@ -85,13 +82,13 @@ const AppContent: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <div className="px-4 space-y-4">
+              <div className="px-3 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-800">
+                  <h2 className="text-base font-semibold text-gray-800">
                     Lugares disponibles ({filteredFerias.length})
                   </h2>
                   {location && (
-                    <span className="text-sm text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                    <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
                       📍 Ubicación activa
                     </span>
                   )}
@@ -121,7 +118,7 @@ const AppContent: React.FC = () => {
       {/* Contenido principal */}
       {renderContent()}
 
-      {/* Navegación inferior fija */}
+      {/* Navegación inferior fija - Siempre visible */}
       <BottomNavigation
         activeTab={activeTab}
         onTabChange={setActiveTab}
