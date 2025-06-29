@@ -308,7 +308,7 @@ const MapView: React.FC = () => {
         ref={mapContainer} 
         className="w-full absolute inset-0"
         style={{ 
-          height: 'calc(100vh - 3rem - 4rem)', // 100vh - header height - bottom nav height
+          height: '100%', // Ocupa toda la altura del contenedor padre relativo
           minHeight: '300px' 
         }} 
       />

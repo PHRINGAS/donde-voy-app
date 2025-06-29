@@ -43,14 +43,16 @@ const AppContent: React.FC = () => {
     switch (activeTab) {
       case 'map':
         return (
-          <div className="flex-1 relative" style={{ height: 'calc(100vh - 3rem - 4rem)' }}>
+          // Este div tomará el espacio disponible gracias a flex-1 en su padre
+          <div className="flex-1 relative">
             <MapView />
           </div>
         );
 
       case 'reminders':
         return (
-          <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '4rem', height: 'calc(100vh - 3rem - 4rem)' }}>
+          // Este div tomará el espacio disponible y permitirá scroll interno
+          <div className="flex-1 overflow-y-auto">
             <ReminderSystem />
           </div>
         );
@@ -58,7 +60,8 @@ const AppContent: React.FC = () => {
       case 'list':
       default:
         return (
-          <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '4rem', height: 'calc(100vh - 3rem - 4rem)' }}>
+          // Este div tomará el espacio disponible y permitirá scroll interno
+          <div className="flex-1 overflow-y-auto">
             {/* Filtro de categorías compacto */}
             <div className="p-3">
               <CategoryFilter />
@@ -118,8 +121,8 @@ const AppContent: React.FC = () => {
         />
       </div>
 
-      {/* Contenido principal con margen superior para el header */}
-      <div className="flex-1 mt-12 sm:mt-14">
+      {/* Contenido principal con padding para header y bottom navigation */}
+      <div className="flex-1 pt-12 sm:pt-14 pb-14 flex flex-col">
         {renderContent()}
       </div>
 
