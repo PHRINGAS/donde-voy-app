@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster';
 import { useApp } from '../contexts/AppContext';
 import { Feria } from '../types';
 import { Button } from './ui/button';
@@ -19,7 +22,7 @@ const MapView: React.FC = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const userMarker = useRef<L.Marker | null>(null);
-  const feriaMarkers = useRef<L.Marker[]>([]);
+  const markersCluster = useRef<L.MarkerClusterGroup | null>(null);
   const [isUserMovingMap, setIsUserMovingMap] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<Feria | null>(null);
 
@@ -29,7 +32,7 @@ const MapView: React.FC = () => {
   const adjustMapHeight = () => {
     if (!mapContainer.current) return;
     
-    const menuHeight = 65; // Altura del menú inferior elegante
+    const menuHeight = 56; // Altura del menú inferior arreglado
     const windowHeight = window.innerHeight;
     
     const mapHeight = windowHeight - menuHeight;
@@ -43,31 +46,31 @@ const MapView: React.FC = () => {
     }
   };
 
-  // Colores para diferentes categorías
+  // Colores para diferentes categorías - SOLO MODO CLARO
   const getMarkerColor = (categoria: string, tipo: string): string => {
     const categoryColors: { [key: string]: string } = {
       'Mercados': '#FF5722',    // Naranja vibrante
       'Ferias': '#E64A19',      // Naranja oscuro
-      'Cultura': '#00BCD4'      // Cyan
+      'Cultura': '#FF9800'      // Naranja medio
     };
 
     const typeColors: { [key: string]: string } = {
       'Mercado': '#FF5722',
       'Artesanías': '#E64A19',
-      'Libros': '#00BCD4',
+      'Libros': '#FF9800',
       'Antigüedades': '#FFC107',
-      'Teatro': '#9C27B0',
-      'Museo': '#673AB7',
-      'Centro Cultural': '#3F51B5',
-      'Bar': '#FF9800',
-      'Café': '#FF5722'
+      'Teatro': '#FF5722',
+      'Museo': '#E64A19',
+      'Centro Cultural': '#FF9800',
+      'Bar': '#FF5722',
+      'Café': '#E64A19'
     };
 
     return typeColors[tipo] || categoryColors[categoria] || '#FF5722';
   };
 
   // Crear icono personalizado mejorado
-  const createPointIcon = (color: string, size: number = 30, categoria: string, isSelected: boolean = false) => {
+  const createPointIcon = (color: string, size: number = 32, categoria: string, isSelected: boolean = false) => {
     const iconMap: { [key: string]: string } = {
       'Mercados': '🛒',
       'Ferias': '🎪',
@@ -167,9 +170,31 @@ const MapView: React.FC = () => {
     }
   };
 
-  // Función para obtener solo los 10 puntos más cercanos
-  const getClosestMarkersToShow = (points: Feria[], userLat: number, userLng: number) => {
-    return getClosestPoints(points, userLat, userLng, 10);
+  // Función para filtrar por distancia
+  const filterNearestPlaces = (places: Feria[], userLat: number, userLng: number, limit: number) => {
+    return places
+      .map(place => ({
+        ...place,
+        distance: calculateDistance(userLat, userLng, place.lat, place.lng)
+      }))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, limit);
+  };
+
+  // Función para calcular distancia
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371e3; // Radio de la Tierra en metros
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lng2 - lng1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c;
   };
 
   // Función para crear tarjeta informativa mejorada
@@ -181,9 +206,9 @@ const MapView: React.FC = () => {
       : '';
 
     return (
-      <div className="fixed top-20 left-4 right-4 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[1100] max-w-sm mx-auto glass-effect animate-fade-in-up">
+      <div className="fixed top-20 left-4 right-4 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[1100] max-w-sm mx-auto animate-fade-in-up">
         <div className="p-5">
-          {/* Header con gradiente */}
+          {/* Header */}
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1 pr-3">
               <h3 className="text-xl font-bold text-gray-800 leading-tight">{point.nombre}</h3>
@@ -197,7 +222,7 @@ const MapView: React.FC = () => {
             </button>
           </div>
           
-          {/* Badges mejorados */}
+          {/* Badges */}
           <div className="flex flex-wrap gap-2 mb-4">
             <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs px-3 py-1.5 rounded-full font-semibold">
               {point.tipo}
@@ -212,7 +237,7 @@ const MapView: React.FC = () => {
             )}
           </div>
           
-          {/* Información con iconos mejorados */}
+          {/* Información */}
           <div className="space-y-3 text-sm">
             <div className="flex items-center text-gray-700">
               <span className="text-lg mr-3">🕒</span>
@@ -241,7 +266,7 @@ const MapView: React.FC = () => {
             )}
           </div>
           
-          {/* Descripción con estilo mejorado */}
+          {/* Descripción */}
           {point.descripcion && (
             <div className="mt-4 pt-4 border-t border-gray-100">
               <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg">
@@ -265,7 +290,7 @@ const MapView: React.FC = () => {
     );
   };
 
-  // Inicializar mapa con estilo mejorado
+  // Inicializar mapa con clustering
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
@@ -275,14 +300,44 @@ const MapView: React.FC = () => {
       map.current = L.map(mapContainer.current, {
         center: [-34.6037, -58.3816],
         zoom: 12,
-        zoomControl: false // Removemos controles default
+        zoomControl: false
       });
 
-      // Usar estilo de mapa más moderno (CartoDB Voyager)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      // Usar estilo de mapa claro (CartoDB Positron)
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '©OpenStreetMap, ©CartoDB',
         maxZoom: 19
       }).addTo(map.current);
+
+      // Crear grupo de clusters
+      markersCluster.current = (L as any).markerClusterGroup({
+        maxClusterRadius: 50,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        iconCreateFunction: function(cluster: any) {
+          const count = cluster.getChildCount();
+          let size = 'small';
+          let className = 'marker-cluster-small';
+          
+          if (count > 10) {
+            size = 'medium';
+            className = 'marker-cluster-medium';
+          }
+          if (count > 50) {
+            size = 'large';
+            className = 'marker-cluster-large';
+          }
+          
+          return L.divIcon({
+            html: `<div><span>${count}</span></div>`,
+            className: `marker-cluster ${className}`,
+            iconSize: L.point(40, 40)
+          });
+        }
+      });
+
+      map.current.addLayer(markersCluster.current);
 
       // Agregar controles personalizados
       L.control.zoom({
@@ -297,7 +352,7 @@ const MapView: React.FC = () => {
         setSelectedMarker(null);
       });
 
-      console.log('Mapa inicializado con estilo moderno');
+      console.log('Mapa inicializado con clustering');
     } catch (error) {
       console.error('Error al inicializar el mapa:', error);
     }
@@ -349,56 +404,48 @@ const MapView: React.FC = () => {
     }
   }, [userLocation, isUserMovingMap]);
 
-  // Actualizar marcadores con animaciones
+  // Actualizar marcadores con clustering
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !markersCluster.current) return;
 
-    // Remover marcadores anteriores
-    feriaMarkers.current.forEach(marker => {
-      map.current!.removeLayer(marker);
-    });
-    feriaMarkers.current = [];
+    // Limpiar cluster
+    markersCluster.current.clearLayers();
 
     let pointsToShow = filteredFerias;
 
     // Si hay ubicación del usuario, mostrar solo los 10 más cercanos
     if (userLocation && filteredFerias.length > 0) {
-      pointsToShow = getClosestMarkersToShow(filteredFerias, userLocation.lat, userLocation.lng);
+      pointsToShow = filterNearestPlaces(filteredFerias, userLocation.lat, userLocation.lng, 10);
     }
 
-    // Agregar nuevos marcadores con animación
-    pointsToShow.forEach((point: Feria, index) => {
+    // Agregar marcadores al cluster
+    pointsToShow.forEach((point: Feria) => {
       const markerColor = getMarkerColor(point.categoria, point.tipo);
       const isSelected = selectedMarker?.id === point.id;
-      const markerSize = 32; // Tamaño ligeramente mayor
+      const markerSize = 32;
 
       const marker = L.marker([point.lat, point.lng], {
         icon: createPointIcon(markerColor, markerSize, point.categoria, isSelected)
       });
-
-      // Animación de entrada escalonada
-      setTimeout(() => {
-        marker.addTo(map.current!);
-      }, index * 50);
 
       // Manejar clic en marcador
       marker.on('click', (e) => {
         e.originalEvent.stopPropagation();
         setSelectedMarker(point);
         
-        // Centrar el mapa en el marcador seleccionado con animación suave
+        // Centrar el mapa en el marcador seleccionado
         map.current!.setView([point.lat, point.lng], Math.max(map.current!.getZoom(), 15), {
           animate: true,
           duration: 0.8
         });
       });
 
-      feriaMarkers.current.push(marker);
+      markersCluster.current!.addLayer(marker);
     });
 
-    // Ajustar vista para mostrar todos los puntos visibles
+    // Ajustar vista si no hay marcador seleccionado
     if (pointsToShow.length > 0 && !isUserMovingMap && !selectedMarker) {
-      const group = new L.FeatureGroup(feriaMarkers.current);
+      const group = new L.FeatureGroup([markersCluster.current]);
       if (userMarker.current) {
         group.addLayer(userMarker.current);
       }
@@ -425,7 +472,7 @@ const MapView: React.FC = () => {
       {selectedMarker && createInfoCard(selectedMarker)}
 
       {/* Contador de puntos mejorado */}
-      <div className="absolute bottom-20 left-4 bg-white bg-opacity-95 rounded-xl px-3 py-2 shadow-lg z-[1000] glass-effect">
+      <div className="absolute bottom-20 left-4 bg-white bg-opacity-95 rounded-xl px-3 py-2 shadow-lg z-[1000]">
         <span className="text-sm font-semibold text-gray-700">
           {userLocation && filteredFerias.length > 10 
             ? `10 de ${filteredFerias.length} lugares` 
