@@ -43,8 +43,8 @@ const AppContent: React.FC = () => {
     switch (activeTab) {
       case 'map':
         return (
-          // Este div tomará el espacio disponible gracias a flex-1 en su padre
-          <div className="flex-1 relative">
+          // Cambiado a h-full para ocupar la altura del padre flex-col
+          <div className="h-full relative">
             <MapView />
           </div>
         );
@@ -113,8 +113,8 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col overflow-hidden">
-      {/* Header fijo */}
-      <div className="fixed top-0 left-0 right-0 z-50">
+      {/* Header fijo - Aumentado z-index para asegurar que esté sobre el mapa */}
+      <div className="fixed top-0 left-0 right-0 z-[1050]">
         <Header
           onSearchClick={() => setShowSearch(true)}
           onLocationClick={handleLocationClick}
