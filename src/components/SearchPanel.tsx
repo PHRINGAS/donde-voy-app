@@ -26,7 +26,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
     const searchTimeout = setTimeout(() => {
       if (searchValue.length > 2) {
         const results = filteredFerias
-          .filter(feria => 
+          .filter(feria =>
             feria.nombre.toLowerCase().includes(searchValue.toLowerCase()) ||
             feria.direccion.toLowerCase().includes(searchValue.toLowerCase()) ||
             feria.barrio?.toLowerCase().includes(searchValue.toLowerCase())
@@ -71,9 +71,9 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
   };
 
   const getActiveFiltersCount = () => {
-    return Object.values(localFilters).filter(value => 
-      value !== undefined && 
-      value !== '' && 
+    return Object.values(localFilters).filter(value =>
+      value !== undefined &&
+      value !== '' &&
       !(Array.isArray(value) && value.length === 0)
     ).length;
   };
@@ -90,8 +90,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[1100] flex animate-slide-in-right items-end"> {/* items-end para alinear abajo si es necesario */}
-      <div className="bg-white w-full max-w-md ml-auto h-[calc(100%-var(--bottom-nav-height,0px))] flex flex-col shadow-2xl"> {/* Ajuste de altura */}
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[1100] flex animate-slide-in-right items-end sm:items-center">
+      <div
+        className="bg-white w-full h-full max-w-none sm:max-w-md sm:h-[calc(100%-var(--bottom-nav-height,0px))] ml-auto flex flex-col shadow-2xl rounded-none sm:rounded-2xl"
+      >
         {/* Header con glassmorphism */}
         <div className="sticky top-0 z-[1110] bg-white bg-opacity-95 backdrop-blur-lg shadow-sm">
           {/* Título optimizado */}
@@ -181,11 +183,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                 <button
                   key={id}
                   onClick={() => setActiveTab(id as any)}
-                  className={`flex items-center gap-2 py-3 px-4 text-sm font-semibold transition-all whitespace-nowrap ${
-                    activeTab === id
+                  className={`flex items-center gap-2 py-3 px-4 text-sm font-semibold transition-all whitespace-nowrap ${activeTab === id
                       ? `text-${color}-600 border-b-2 border-${color}-600 bg-${color}-50`
                       : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   <Icon size={14} />
                   {label}
@@ -196,7 +197,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Contenido scrolleable optimizado */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pb-32">
           <div className="p-4 space-y-6">
             {/* Tab General - Diseño mejorado */}
             {activeTab === 'general' && (
@@ -214,11 +215,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                           ...localFilters,
                           tipo: localFilters.tipo === tipo ? undefined : tipo
                         })}
-                        className={`filter-chip ${
-                          localFilters.tipo === tipo
+                        className={`filter-chip ${localFilters.tipo === tipo
                             ? 'filter-chip-active'
                             : 'filter-chip-inactive'
-                        }`}
+                          }`}
                       >
                         {tipo}
                       </button>
@@ -244,11 +244,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                           ...localFilters,
                           horarioTipo: localFilters.horarioTipo === value ? undefined : value as any
                         })}
-                        className={`p-3 rounded-xl border-2 transition-all text-xs text-center ${
-                          localFilters.horarioTipo === value
+                        className={`p-3 rounded-xl border-2 transition-all text-xs text-center ${localFilters.horarioTipo === value
                             ? 'border-orange-500 bg-orange-50 text-orange-700'
                             : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50'
-                        }`}
+                          }`}
                       >
                         <div className="font-bold">{label}</div>
                         <div className="text-gray-500 mt-1">{desc}</div>
@@ -272,11 +271,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                             ...localFilters,
                             dia: localFilters.dia === fullDay ? undefined : fullDay
                           })}
-                          className={`p-3 rounded-xl text-xs font-bold transition-all ${
-                            localFilters.dia === fullDay
+                          className={`p-3 rounded-xl text-xs font-bold transition-all ${localFilters.dia === fullDay
                               ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
                               : 'bg-gray-100 hover:bg-orange-100 text-gray-700 hover:scale-105'
-                          }`}
+                            }`}
                         >
                           {dia}
                         </button>
@@ -298,11 +296,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                           ...localFilters,
                           distanciaMaxima: localFilters.distanciaMaxima === km * 1000 ? undefined : km * 1000
                         })}
-                        className={`p-3 rounded-xl text-sm font-bold transition-all ${
-                          localFilters.distanciaMaxima === km * 1000
+                        className={`p-3 rounded-xl text-sm font-bold transition-all ${localFilters.distanciaMaxima === km * 1000
                             ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
                             : 'bg-gray-100 hover:bg-green-100 text-gray-700 hover:scale-105'
-                        }`}
+                          }`}
                       >
                         {km} km
                       </button>
@@ -322,11 +319,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                   {ETIQUETAS_SISTEMA.productos.map(producto => (
                     <label
                       key={producto}
-                      className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${
-                        isSelected('productos', producto)
+                      className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${isSelected('productos', producto)
                           ? 'border-purple-500 bg-purple-50 shadow-sm'
                           : 'border-gray-200 hover:border-purple-200 hover:bg-purple-50'
-                      }`}
+                        }`}
                     >
                       <Checkbox
                         checked={isSelected('productos', producto)}
@@ -354,8 +350,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                         key={barrio}
                         variant={isSelected('barrio', barrio) ? "default" : "outline"}
                         className={`cursor-pointer ${isSelected('barrio', barrio)
-                            ? 'bg-orange-500 hover:bg-orange-600'
-                            : 'hover:bg-orange-50'
+                          ? 'bg-orange-500 hover:bg-orange-600'
+                          : 'hover:bg-orange-50'
                           }`}
                         onClick={() => handleMultiSelect('barrio', barrio)}
                       >
@@ -378,8 +374,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                         key={comuna}
                         variant={isSelected('comuna', comuna) ? "default" : "outline"}
                         className={`cursor-pointer ${isSelected('comuna', comuna)
-                            ? 'bg-orange-500 hover:bg-orange-600'
-                            : 'hover:bg-orange-50'
+                          ? 'bg-orange-500 hover:bg-orange-600'
+                          : 'hover:bg-orange-50'
                           }`}
                         onClick={() => handleMultiSelect('comuna', comuna)}
                       >
@@ -405,8 +401,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                         key={especialidad}
                         variant={isSelected('especialidad', especialidad) ? "default" : "outline"}
                         className={`cursor-pointer ${isSelected('especialidad', especialidad)
-                            ? 'bg-green-500 hover:bg-green-600'
-                            : 'hover:bg-green-50'
+                          ? 'bg-green-500 hover:bg-green-600'
+                          : 'hover:bg-green-50'
                           }`}
                         onClick={() => handleMultiSelect('especialidad', especialidad)}
                       >
@@ -429,8 +425,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                         key={servicio}
                         variant={isSelected('servicios', servicio) ? "default" : "outline"}
                         className={`cursor-pointer ${isSelected('servicios', servicio)
-                            ? 'bg-blue-500 hover:bg-blue-600'
-                            : 'hover:bg-blue-50'
+                          ? 'bg-blue-500 hover:bg-blue-600'
+                          : 'hover:bg-blue-50'
                           }`}
                         onClick={() => handleMultiSelect('servicios', servicio)}
                       >
@@ -462,24 +458,22 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Footer mejorado */}
-        <div className="sticky bottom-0 z-[1110] bg-white border-t border-gray-200 p-4">
-          <div className="flex gap-3">
-            <Button
-              onClick={handleClearFilters}
-              variant="outline"
-              className="flex-1 transition-all hover:bg-gray-50 border-2"
-              disabled={getActiveFiltersCount() === 0}
-            >
-              Limpiar {getActiveFiltersCount() > 0 && `(${getActiveFiltersCount()})`}
-            </Button>
-            <Button
-              onClick={handleApplyFilters}
-              className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
-            >
-              Aplicar filtros
-            </Button>
-          </div>
+        {/* Footer fijo en la parte inferior */}
+        <div className="fixed bottom-0 left-0 w-full z-[1120] bg-white bg-opacity-95 backdrop-blur-lg shadow-lg px-4 py-3 flex gap-3 sm:static sm:shadow-none sm:bg-opacity-100 sm:px-0 sm:py-0">
+          <Button
+            onClick={handleClearFilters}
+            variant="outline"
+            className="flex-1 transition-all hover:bg-gray-50 border-2"
+            disabled={getActiveFiltersCount() === 0}
+          >
+            Limpiar {getActiveFiltersCount() > 0 && `(${getActiveFiltersCount()})`}
+          </Button>
+          <Button
+            onClick={handleApplyFilters}
+            className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
+          >
+            Aplicar filtros
+          </Button>
         </div>
       </div>
     </div>
