@@ -13,44 +13,44 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   favoriteCount
 }) => {
   return (
-    <div className="bg-white border-t border-gray-200 px-2 py-1.5 shadow-lg z-[1050]">
-      <div className="flex justify-around items-center max-w-md mx-auto">
+    <nav className="bottom-navigation">
+      <div className="flex justify-around items-center h-14 px-2">
         <button
           onClick={() => onTabChange('map')}
-          className={`flex flex-col items-center py-1.5 px-2 rounded-lg transition-colors ${
+          className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all ${
             activeTab === 'map'
-              ? 'text-orange-600 bg-orange-50'
+              ? 'text-orange-600 bg-orange-50 active'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          <MapPin size={18} />
-          <span className="text-xs mt-0.5">Mapa</span>
+          <MapPin size={20} />
+          <span className="text-xs mt-1 font-medium">Mapa</span>
         </button>
         
         <button
           onClick={() => onTabChange('list')}
-          className={`flex flex-col items-center py-1.5 px-2 rounded-lg transition-colors ${
+          className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all ${
             activeTab === 'list'
-              ? 'text-orange-600 bg-orange-50'
+              ? 'text-orange-600 bg-orange-50 active'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Search size={18} />
-          <span className="text-xs mt-0.5">Lista</span>
+          <Search size={20} />
+          <span className="text-xs mt-1 font-medium">Lista</span>
         </button>
 
         <button
           onClick={() => onTabChange('favorites')}
-          className={`flex flex-col items-center py-1.5 px-2 rounded-lg transition-colors relative ${
+          className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all relative ${
             activeTab === 'favorites'
-              ? 'text-red-600 bg-red-50'
+              ? 'text-red-600 bg-red-50 active'
               : 'text-gray-500 hover:text-red-600'
           }`}
         >
-          <Heart size={18} fill={activeTab === 'favorites' ? 'currentColor' : 'none'} />
-          <span className="text-xs mt-0.5">Favoritas</span>
+          <Heart size={20} fill={activeTab === 'favorites' ? 'currentColor' : 'none'} />
+          <span className="text-xs mt-1 font-medium">Favoritas</span>
           {favoriteCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
               {favoriteCount}
             </span>
           )}
@@ -58,17 +58,17 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
 
         <button
           onClick={() => onTabChange('reminders')}
-          className={`flex flex-col items-center py-1.5 px-2 rounded-lg transition-colors ${
+          className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all ${
             activeTab === 'reminders'
-              ? 'text-orange-600 bg-orange-50'
+              ? 'text-orange-600 bg-orange-50 active'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Bell size={18} />
-          <span className="text-xs mt-0.5">Alertas</span>
+          <Bell size={20} />
+          <span className="text-xs mt-1 font-medium">Alertas</span>
         </button>
       </div>
-    </div>
+    </nav>
   );
 };
 

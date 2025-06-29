@@ -125,9 +125,9 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+    <div className="app-container">
       {/* Header fijo - Siempre visible */}
-      <div className="flex-shrink-0 z-[1050]">
+      <div className="app-header">
         <Header
           onSearchClick={() => setShowSearch(true)}
           onLocationClick={handleLocationClick}
@@ -135,12 +135,12 @@ const AppContent: React.FC = () => {
       </div>
 
       {/* Contenido principal - Ocupa el espacio entre header y bottom nav */}
-      <div className="flex-1 relative overflow-hidden">
+      <div className="app-content">
         {renderContent()}
       </div>
 
       {/* Navegación inferior fija - Siempre visible */}
-      <div className="flex-shrink-0 z-[1050]">
+      <div className="app-bottom-nav">
         <BottomNavigation
           activeTab={activeTab}
           onTabChange={setActiveTab}

@@ -46,6 +46,12 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Variables específicas para el menú */
+    --menu-bg: #ffffff;
+    --menu-text: #333333;
+    --menu-border: #e0e0e0;
+    --menu-active: #ff6b35;
   }
 
   .dark {
@@ -85,38 +91,47 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Variables para modo oscuro */
+    --menu-bg: #1a1a1a;
+    --menu-text: #ffffff;
+    --menu-border: #333333;
+    --menu-active: #ff6b35;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
 
-  body {
-    @apply bg-background text-foreground font-sans;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-  
-  /* Estilos para la app móvil */
-  html, body, #root {
+  html, body {
     height: 100%;
-    overflow: hidden; /* Prevenir scroll en el body */
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     -webkit-overflow-scrolling: touch;
   }
-  
-  /* Mejoras para dispositivos móviles */
-  @media (max-width: 768px) {
-    body {
-      -webkit-text-size-adjust: 100%;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
+
+  #root {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    position: relative;
   }
   
   /* Safe areas para dispositivos con notch */
@@ -302,6 +317,76 @@ All colors MUST be HSL.
     100% {
       background-position: 200% 0;
     }
+  }
+
+  /* ESTILOS CRÍTICOS PARA EL MENÚ INFERIOR */
+  .bottom-navigation {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    background-color: var(--menu-bg) !important;
+    border-top: 1px solid var(--menu-border) !important;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    height: auto !important;
+    min-height: 56px !important;
+  }
+
+  .bottom-navigation * {
+    display: initial !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .bottom-navigation button {
+    background: transparent !important;
+    color: var(--menu-text) !important;
+    border: none !important;
+    cursor: pointer !important;
+  }
+
+  .bottom-navigation button.active {
+    color: var(--menu-active) !important;
+  }
+
+  /* Asegurar que el mapa tenga z-index menor */
+  .leaflet-container {
+    z-index: 1 !important;
+  }
+
+  /* Estructura de la app */
+  .app-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .app-header {
+    flex-shrink: 0;
+    z-index: 1000;
+  }
+
+  .app-content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .app-bottom-nav {
+    flex-shrink: 0;
+    z-index: 9999;
   }
 }
 
