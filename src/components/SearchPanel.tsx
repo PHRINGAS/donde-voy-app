@@ -90,8 +90,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[1100] flex animate-slide-in-right">
-      <div className="bg-white w-full max-w-md ml-auto h-full flex flex-col shadow-2xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[1100] flex animate-slide-in-right items-end"> {/* items-end para alinear abajo si es necesario */}
+      <div className="bg-white w-full max-w-md ml-auto h-[calc(100%-var(--bottom-nav-height,0px))] flex flex-col shadow-2xl"> {/* Ajuste de altura */}
         {/* Header con glassmorphism */}
         <div className="sticky top-0 z-[1110] bg-white bg-opacity-95 backdrop-blur-lg shadow-sm">
           {/* Título optimizado */}
@@ -318,22 +318,22 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                 <label className="block text-sm font-bold text-gray-800 mb-4">
                   Productos disponibles
                 </label>
-                <div className="grid grid-cols-1 gap-3 max-h-80 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto">
                   {ETIQUETAS_SISTEMA.productos.map(producto => (
                     <label
                       key={producto}
-                      className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${
                         isSelected('productos', producto)
-                          ? 'border-purple-500 bg-purple-50 shadow-md'
-                          : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50 hover:scale-102'
+                          ? 'border-purple-500 bg-purple-50 shadow-sm'
+                          : 'border-gray-200 hover:border-purple-200 hover:bg-purple-50'
                       }`}
                     >
                       <Checkbox
                         checked={isSelected('productos', producto)}
                         onCheckedChange={() => handleMultiSelect('productos', producto)}
-                        className="mr-3"
+                        className="mr-2 h-4 w-4"
                       />
-                      <span className="text-sm font-semibold">{producto}</span>
+                      <span className="text-xs font-medium">{producto}</span>
                     </label>
                   ))}
                 </div>
