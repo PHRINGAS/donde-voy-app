@@ -1,102 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
+/* Nueva paleta de colores */
 @layer base {
   :root {
+    /* COLORES PRINCIPALES */
+    --primary: 16 82% 55%;      /* #FF5722 - Naranja vibrante */
+    --primary-dark: 14 77% 52%; /* #E64A19 - Naranja oscuro */
+    --secondary: 187 100% 42%;  /* #00BCD4 - Cyan para acentos */
+    
+    /* NEUTROS */
+    --gray-900: 0 0% 13%;       /* #212121 */
+    --gray-700: 0 0% 38%;       /* #616161 */
+    --gray-500: 0 0% 62%;       /* #9E9E9E */
+    --gray-300: 0 0% 88%;       /* #E0E0E0 */
+    --gray-100: 0 0% 96%;       /* #F5F5F5 */
+    --white: 0 0% 100%;         /* #FFFFFF */
+    
+    /* ESTADOS */
+    --success: 122 39% 49%;     /* #4CAF50 */
+    --warning: 45 100% 51%;     /* #FFC107 */
+    --error: 4 90% 58%;         /* #F44336 */
+    
+    /* SOMBRAS */
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.12);
+    --shadow-lg: 0 8px 16px rgba(0,0,0,0.15);
+
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
-
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* Variables específicas para el menú */
-    --menu-bg: #ffffff;
-    --menu-text: #333333;
-    --menu-border: #e0e0e0;
-    --menu-active: #ff6b35;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* Variables para modo oscuro */
-    --menu-bg: #1a1a1a;
-    --menu-text: #ffffff;
-    --menu-border: #333333;
-    --menu-active: #ff6b35;
+  /* Modo oscuro */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: 16 91% 67%;      /* #FF7043 */
+      --gray-900: 0 0% 98%;       /* #FAFAFA */
+      --gray-700: 0 0% 88%;       /* #E0E0E0 */
+      --white: 0 0% 7%;           /* #121212 */
+      
+      --background: 222.2 84% 4.9%;
+      --foreground: 210 40% 98%;
+      --card: 222.2 84% 4.9%;
+      --card-foreground: 210 40% 98%;
+      --popover: 222.2 84% 4.9%;
+      --popover-foreground: 210 40% 98%;
+      --muted: 217.2 32.6% 17.5%;
+      --muted-foreground: 215 20.2% 65.1%;
+      --accent: 217.2 32.6% 17.5%;
+      --accent-foreground: 210 40% 98%;
+      --destructive: 0 62.8% 30.6%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 217.2 32.6% 17.5%;
+      --input: 217.2 32.6% 17.5%;
+      --ring: 212.7 26.8% 83.9%;
+    }
   }
 }
 
@@ -119,11 +94,11 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
-    font-feature-settings: "rlig" 1, "calt" 1;
-    -webkit-text-size-adjust: 100%;
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -133,112 +108,39 @@ All colors MUST be HSL.
     overflow: hidden;
     position: relative;
   }
-  
-  /* Safe areas para dispositivos con notch */
-  .header {
-    padding-top: env(safe-area-inset-top);
+
+  /* Estructura de la app sin header */
+  .app-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
   }
 
-  .bottom-menu {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  /* Animaciones personalizadas */
-  .animate-fade-in {
-    animation: fade-in 0.3s ease-out;
-  }
-  
-  .animate-slide-up {
-    animation: slide-up 0.3s ease-out;
-  }
-  
-  /* Efectos de hover mejorados para móvil */
-  @media (hover: hover) {
-    .hover-scale:hover {
-      transform: scale(1.02);
-      transition: transform 0.2s ease-out;
-    }
-  }
-  
-  /* Scrollbar personalizado */
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
+  .app-content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
   }
 
-  /* Ocultar scrollbar horizontal en elementos específicos */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  .app-bottom-nav {
+    flex-shrink: 0;
+    z-index: 9999;
   }
 
-  /* Smooth scrolling para elementos horizontales y verticales */
-  .smooth-scroll {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
-  }
-
-  /* Estilos para marcadores del mapa */
-  .custom-point-marker {
-    background: transparent !important;
-    border: none !important;
-  }
-
-  .custom-user-marker {
-    background: transparent !important;
-    border: none !important;
-  }
-
-  /* Animación de pulso para el marcador de usuario */
+  /* Animaciones de microinteracciones */
   @keyframes pulse {
-    0% { 
-      box-shadow: 0 0 0 0 rgba(0,123,191,0.7); 
-    }
-    70% { 
-      box-shadow: 0 0 0 10px rgba(0,123,191,0); 
-    }
-    100% { 
-      box-shadow: 0 0 0 0 rgba(0,123,191,0); 
-    }
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+    100% { transform: scale(2); opacity: 0; }
   }
 
-  /* Optimizaciones para el menú de búsqueda */
-  .search-panel-content {
-    /* Asegurar que el contenido sea scrolleable sin interferir con elementos fijos */
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Transiciones suaves para badges y botones */
-  .transition-all {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Mejoras de accesibilidad para elementos clickeables */
-  @media (max-width: 768px) {
-    button, .cursor-pointer {
-      min-height: 44px; /* Tamaño mínimo recomendado para touch targets */
-      min-width: 44px;
-    }
-  }
-
-  /* Animaciones de entrada para elementos del menú de búsqueda */
   @keyframes slideInFromRight {
     from {
       transform: translateX(100%);
@@ -261,6 +163,10 @@ All colors MUST be HSL.
     }
   }
 
+  .animate-pulse-location {
+    animation: pulse 2s infinite;
+  }
+
   .animate-slide-in-right {
     animation: slideInFromRight 0.3s ease-out;
   }
@@ -269,41 +175,207 @@ All colors MUST be HSL.
     animation: fadeInUp 0.2s ease-out;
   }
 
-  /* Efectos de glassmorphism para el menú de búsqueda */
-  .search-menu-backdrop {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+  /* Marcadores del mapa personalizados */
+  .custom-point-marker {
+    background: transparent !important;
+    border: none !important;
   }
 
-  .search-menu-panel {
-    box-shadow: 
-      0 25px 50px -12px rgba(0, 0, 0, 0.25),
-      0 0 0 1px rgba(0, 0, 0, 0.05);
+  .custom-user-marker {
+    background: transparent !important;
+    border: none !important;
   }
 
-  /* Estilos para chips y badges interactivos */
-  .filter-chip {
+  /* Menú inferior elegante */
+  .bottom-navigation {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    background: rgba(255,255,255,0.98) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-top: none !important;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08) !important;
+    height: 65px !important;
+    padding: 0 8px !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+
+  .bottom-navigation button {
+    position: relative !important;
+    transition: all 0.3s ease !important;
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+  }
+
+  .bottom-navigation button.active::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -2px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 30px !important;
+    height: 3px !important;
+    background: hsl(var(--primary)) !important;
+    border-radius: 2px !important;
+  }
+
+  .bottom-navigation button .icon {
+    font-size: 22px !important;
+    transition: transform 0.2s ease !important;
+  }
+
+  .bottom-navigation button.active .icon {
+    transform: scale(1.1) !important;
+    color: hsl(var(--primary)) !important;
+  }
+
+  .bottom-navigation button .label {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    margin-top: 4px !important;
+  }
+
+  /* Modo oscuro para el menú */
+  @media (prefers-color-scheme: dark) {
+    .bottom-navigation {
+      background: rgba(18,18,18,0.98) !important;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.4) !important;
+    }
+  }
+
+  /* Controles flotantes sobre el mapa */
+  .map-controls {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 1000;
+  }
+
+  .control-btn {
+    width: 48px;
+    height: 48px;
+    background: white;
+    border: none;
+    border-radius: 24px;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .control-btn:active {
+    transform: scale(0.95);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Búsqueda flotante */
+  .floating-search {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    right: 72px;
+    background: white;
+    border-radius: 28px;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    gap: 12px;
+    z-index: 1000;
+  }
+
+  .floating-search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: hsl(var(--gray-900));
+  }
+
+  .floating-search::before {
+    content: "🔍";
+    font-size: 20px;
+    color: hsl(var(--gray-500));
+  }
+
+  /* Brand flotante */
+  .app-brand {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    color: hsl(var(--primary));
+    box-shadow: var(--shadow-md);
+    font-size: 14px;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Efectos de glassmorphism */
+  .glass-effect {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Optimizaciones para scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Scrollbar personalizado */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+
+  /* Transiciones suaves */
+  .transition-all {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateZ(0); /* Optimización de hardware */
   }
 
-  .filter-chip:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  /* Safe areas para dispositivos con notch */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
   }
 
-  .filter-chip:active {
-    transform: translateY(0);
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Optimizaciones para scroll en móvil */
-  .mobile-scroll-container {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    scroll-snap-type: y proximity;
-  }
-
-  /* Estados de carga y transiciones */
+  /* Estados de carga */
   .loading-shimmer {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
@@ -319,74 +391,17 @@ All colors MUST be HSL.
     }
   }
 
-  /* ESTILOS CRÍTICOS PARA EL MENÚ INFERIOR */
-  .bottom-navigation {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 9999 !important;
-    background-color: var(--menu-bg) !important;
-    border-top: 1px solid var(--menu-border) !important;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-    height: auto !important;
-    min-height: 56px !important;
-  }
-
-  .bottom-navigation * {
-    display: initial !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-
-  .bottom-navigation button {
-    background: transparent !important;
-    color: var(--menu-text) !important;
-    border: none !important;
-    cursor: pointer !important;
-  }
-
-  .bottom-navigation button.active {
-    color: var(--menu-active) !important;
-  }
-
   /* Asegurar que el mapa tenga z-index menor */
   .leaflet-container {
     z-index: 1 !important;
   }
 
-  /* Estructura de la app */
-  .app-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
-  }
-
-  .app-header {
-    flex-shrink: 0;
-    z-index: 1000;
-  }
-
-  .app-content {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .app-bottom-nav {
-    flex-shrink: 0;
-    z-index: 9999;
+  /* Mejoras de accesibilidad para elementos clickeables */
+  @media (max-width: 768px) {
+    button, .cursor-pointer {
+      min-height: 44px;
+      min-width: 44px;
+    }
   }
 }
 
@@ -408,93 +423,30 @@ All colors MUST be HSL.
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
 
-  /* Componentes específicos para el menú de búsqueda optimizado */
-  .search-input-enhanced {
-    @apply relative;
+  /* Botones mejorados */
+  .btn-primary {
+    @apply bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-2 rounded-lg transition-all;
   }
 
-  .search-input-enhanced input {
-    @apply w-full pl-12 pr-10 py-3 text-base border-2 border-orange-200 rounded-xl;
-    @apply focus:border-orange-500 focus:ring-2 focus:ring-orange-200 focus:outline-none;
-    @apply transition-all duration-200;
+  .btn-secondary {
+    @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg transition-all;
   }
 
-  .search-input-enhanced input:focus {
-    box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.1);
-  }
-
-  .filter-section {
-    @apply space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200;
-  }
-
-  .filter-section h3 {
-    @apply text-sm font-semibold text-gray-700 mb-3;
-  }
-
-  .filter-grid {
-    @apply grid gap-2;
-  }
-
-  .filter-grid-2 {
-    @apply grid-cols-2;
-  }
-
-  .filter-grid-3 {
-    @apply grid-cols-3;
-  }
-
-  .filter-grid-4 {
-    @apply grid-cols-4;
-  }
-
-  .filter-grid-5 {
-    @apply grid-cols-5;
-  }
-
-  /* Botones de filtro mejorados */
-  .filter-button {
-    @apply p-3 rounded-lg border-2 transition-all text-sm font-medium;
+  /* Chips de filtro */
+  .filter-chip {
+    @apply p-3 rounded-lg border-2 transition-all text-sm font-medium cursor-pointer;
     @apply hover:scale-105 active:scale-95;
   }
 
-  .filter-button-active {
+  .filter-chip-active {
     @apply border-orange-500 bg-orange-50 text-orange-700;
   }
 
-  .filter-button-inactive {
+  .filter-chip-inactive {
     @apply border-gray-200 hover:border-orange-300 hover:bg-orange-50;
   }
 
-  /* Chips de horario con iconos */
-  .time-chip {
-    @apply flex-1 p-2 rounded-lg border transition-all text-xs text-center;
-  }
-
-  .time-chip-active {
-    @apply border-orange-500 bg-orange-50 text-orange-700;
-  }
-
-  .time-chip-inactive {
-    @apply border-gray-200 hover:border-orange-300 hover:bg-orange-50;
-  }
-
-  /* Resultados de búsqueda en tiempo real */
-  .search-results {
-    @apply mt-2 bg-white border border-gray-200 rounded-lg shadow-lg;
-    @apply max-h-40 overflow-y-auto;
-  }
-
-  .search-result-item {
-    @apply w-full text-left px-3 py-2 hover:bg-gray-50;
-    @apply border-b border-gray-100 last:border-b-0;
-    @apply transition-colors duration-150;
-  }
-
-  .search-result-item:hover {
-    @apply bg-orange-50;
-  }
-
-  /* Estados vacíos mejorados */
+  /* Estados vacíos */
   .empty-state {
     @apply text-center py-12 px-4;
   }

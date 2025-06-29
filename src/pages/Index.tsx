@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { useApp } from '../contexts/AppContext';
 import { Feria } from '../types';
-import Header from '../components/Header';
 import SearchPanel from '../components/SearchPanel';
 import FeriaCard from '../components/FeriaCard';
 import FeriaDetails from '../components/FeriaDetails';
@@ -11,6 +10,7 @@ import FavoritesTab from '../components/FavoritesTab';
 import ReminderSystem from '../components/ReminderSystem';
 import BottomNavigation from '../components/BottomNavigation';
 import CategoryFilter from '../components/CategoryFilter';
+import FloatingControls from '../components/FloatingControls';
 import { AppProvider } from '../contexts/AppContext';
 import { toast } from "sonner";
 
@@ -41,7 +41,6 @@ const AppContent: React.FC = () => {
   // Función para invalidar el tamaño del mapa cuando se activa la pestaña
   useEffect(() => {
     if (activeTab === 'map') {
-      // Pequeño delay para asegurar que el DOM esté listo
       setTimeout(() => {
         const mapEvent = new CustomEvent('mapTabActivated');
         window.dispatchEvent(mapEvent);
@@ -53,9 +52,13 @@ const AppContent: React.FC = () => {
     switch (activeTab) {
       case 'map':
         return (
-          // El mapa debe ocupar toda la altura disponible entre header y bottom nav
           <div className="absolute inset-0">
             <MapView />
+            {/* Controles flotantes sobre el mapa */}
+            <FloatingControls 
+              onSearchClick={() => setShowSearch(true)}
+              onLocationClick={handleLocationClick}
+            />
           </div>
         );
 
@@ -88,12 +91,12 @@ const AppContent: React.FC = () => {
             )}
 
             {filteredFerias.length === 0 && !loading ? (
-              <div className="text-center py-12 px-4">
-                <div className="text-6xl mb-4">🤔</div>
-                <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              <div className="empty-state">
+                <div className="empty-state-icon">🤔</div>
+                <h3 className="empty-state-title">
                   No se encontraron lugares
                 </h3>
-                <p className="text-gray-500">
+                <p className="empty-state-description">
                   Intenta ajustar los filtros o cambiar de categoría
                 </p>
               </div>
@@ -126,21 +129,13 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="app-container">
-      {/* Header fijo - Siempre visible */}
-      <div className="app-header">
-        <Header
-          onSearchClick={() => setShowSearch(true)}
-          onLocationClick={handleLocationClick}
-        />
-      </div>
-
-      {/* Contenido principal - Ocupa el espacio entre header y bottom nav */}
+      {/* Contenido principal - Ocupa toda la pantalla */}
       <div className="app-content">
         {renderContent()}
       </div>
 
       {/* Navegación inferior fija - Siempre visible */}
-      <div className="app-bottom-nav">
+      <div className="app-bottom-nav safe-area-bottom">
         <BottomNavigation
           activeTab={activeTab}
           onTabChange={setActiveTab}

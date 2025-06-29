@@ -14,7 +14,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
 }) => {
   return (
     <nav className="bottom-navigation">
-      <div className="flex justify-around items-center h-14 px-2">
+      <div className="flex justify-around items-center h-full px-2">
         <button
           onClick={() => onTabChange('map')}
           className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all ${
@@ -23,8 +23,10 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          <MapPin size={20} />
-          <span className="text-xs mt-1 font-medium">Mapa</span>
+          <div className="icon">
+            <MapPin size={22} />
+          </div>
+          <span className="label text-xs mt-1 font-medium">Mapa</span>
         </button>
         
         <button
@@ -35,8 +37,10 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Search size={20} />
-          <span className="text-xs mt-1 font-medium">Lista</span>
+          <div className="icon">
+            <Search size={22} />
+          </div>
+          <span className="label text-xs mt-1 font-medium">Lista</span>
         </button>
 
         <button
@@ -47,8 +51,10 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
               : 'text-gray-500 hover:text-red-600'
           }`}
         >
-          <Heart size={20} fill={activeTab === 'favorites' ? 'currentColor' : 'none'} />
-          <span className="text-xs mt-1 font-medium">Favoritas</span>
+          <div className="icon">
+            <Heart size={22} fill={activeTab === 'favorites' ? 'currentColor' : 'none'} />
+          </div>
+          <span className="label text-xs mt-1 font-medium">Favoritas</span>
           {favoriteCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
               {favoriteCount}
@@ -64,8 +70,10 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Bell size={20} />
-          <span className="text-xs mt-1 font-medium">Alertas</span>
+          <div className="icon">
+            <Bell size={22} />
+          </div>
+          <span className="label text-xs mt-1 font-medium">Alertas</span>
         </button>
       </div>
     </nav>
