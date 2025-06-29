@@ -55,7 +55,7 @@ const AppContent: React.FC = () => {
           <div className="absolute inset-0">
             <MapView />
             {/* Controles flotantes sobre el mapa */}
-            <FloatingControls 
+            <FloatingControls
               onSearchClick={() => setShowSearch(true)}
               onLocationClick={handleLocationClick}
             />
@@ -131,13 +131,15 @@ const AppContent: React.FC = () => {
       </div>
 
       {/* Navegación inferior fija - Siempre visible */}
-      <div className="app-bottom-nav safe-area-bottom">
-        <BottomNavigation
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          favoriteCount={favorites.length}
-        />
-      </div>
+      {!showSearch && (
+        <div className="app-bottom-nav safe-area-bottom">
+          <BottomNavigation
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            favoriteCount={favorites.length}
+          />
+        </div>
+      )}
 
       {/* Modales */}
       <SearchPanel
