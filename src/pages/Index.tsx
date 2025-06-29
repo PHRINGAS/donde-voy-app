@@ -7,7 +7,7 @@ import SearchPanel from '../components/SearchPanel';
 import FeriaCard from '../components/FeriaCard';
 import FeriaDetails from '../components/FeriaDetails';
 import MapView from '../components/MapView';
-import FavoritesList from '../components/FavoritesList';
+import FavoritesTab from '../components/FavoritesTab';
 import ReminderSystem from '../components/ReminderSystem';
 import BottomNavigation from '../components/BottomNavigation';
 import CategoryFilter from '../components/CategoryFilter';
@@ -15,9 +15,8 @@ import { AppProvider } from '../contexts/AppContext';
 import { toast } from "sonner";
 
 const AppContent: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'map' | 'list' | 'reminders'>('map');
+  const [activeTab, setActiveTab] = useState<'map' | 'list' | 'favorites' | 'reminders'>('map');
   const [showSearch, setShowSearch] = useState(false);
-  const [showFavorites, setShowFavorites] = useState(false);
   const [selectedFeria, setSelectedFeria] = useState<Feria | null>(null);
 
   const { location, error, loading } = useGeolocation();
@@ -47,6 +46,11 @@ const AppContent: React.FC = () => {
           <div className="absolute inset-0">
             <MapView />
           </div>
+        );
+
+      case 'favorites':
+        return (
+          <FavoritesTab onViewDetails={setSelectedFeria} />
         );
 
       case 'reminders':
@@ -129,7 +133,6 @@ const AppContent: React.FC = () => {
         <BottomNavigation
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          onFavoritesClick={() => setShowFavorites(true)}
           favoriteCount={favorites.length}
         />
       </div>
@@ -138,12 +141,6 @@ const AppContent: React.FC = () => {
       <SearchPanel
         isOpen={showSearch}
         onClose={() => setShowSearch(false)}
-      />
-
-      <FavoritesList
-        isOpen={showFavorites}
-        onClose={() => setShowFavorites(false)}
-        onViewDetails={setSelectedFeria}
       />
 
       <FeriaDetails

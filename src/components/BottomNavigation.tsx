@@ -2,16 +2,14 @@ import React from 'react';
 import { MapPin, Search, Heart, Bell } from 'lucide-react';
 
 interface BottomNavigationProps {
-  activeTab: 'map' | 'list' | 'reminders';
-  onTabChange: (tab: 'map' | 'list' | 'reminders') => void;
-  onFavoritesClick: () => void;
+  activeTab: 'map' | 'list' | 'favorites' | 'reminders';
+  onTabChange: (tab: 'map' | 'list' | 'favorites' | 'reminders') => void;
   favoriteCount: number;
 }
 
 const BottomNavigation: React.FC<BottomNavigationProps> = ({
   activeTab,
   onTabChange,
-  onFavoritesClick,
   favoriteCount
 }) => {
   return (
@@ -42,6 +40,23 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         </button>
 
         <button
+          onClick={() => onTabChange('favorites')}
+          className={`flex flex-col items-center py-1.5 px-2 rounded-lg transition-colors relative ${
+            activeTab === 'favorites'
+              ? 'text-red-600 bg-red-50'
+              : 'text-gray-500 hover:text-red-600'
+          }`}
+        >
+          <Heart size={18} fill={activeTab === 'favorites' ? 'currentColor' : 'none'} />
+          <span className="text-xs mt-0.5">Favoritas</span>
+          {favoriteCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+              {favoriteCount}
+            </span>
+          )}
+        </button>
+
+        <button
           onClick={() => onTabChange('reminders')}
           className={`flex flex-col items-center py-1.5 px-2 rounded-lg transition-colors ${
             activeTab === 'reminders'
@@ -51,19 +66,6 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         >
           <Bell size={18} />
           <span className="text-xs mt-0.5">Alertas</span>
-        </button>
-        
-        <button
-          onClick={onFavoritesClick}
-          className="flex flex-col items-center py-1.5 px-2 rounded-lg transition-colors text-gray-500 hover:text-red-600 relative"
-        >
-          <Heart size={18} />
-          <span className="text-xs mt-0.5">Favoritas</span>
-          {favoriteCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-              {favoriteCount}
-            </span>
-          )}
         </button>
       </div>
     </div>
