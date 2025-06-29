@@ -49,45 +49,51 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[1001] flex"> {/* Increased z-index */}
-      <div className="bg-white w-full max-w-md ml-auto h-full overflow-y-auto">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800">Buscar Lugares</h2>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[1001] flex"> {/* Main backdrop */}
+      <div className="bg-white w-full max-w-md ml-auto h-full flex flex-col"> {/* Panel: flex-col for sticky header + scrollable content */}
+        {/* Sticky Header Section (Title + Tabs) */}
+        <div className="sticky top-0 z-10 bg-white shadow-sm">
+          {/* Title/Close Part */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-800">Buscar Lugares</h2>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </div>
+
+          {/* Tabs Navigation Part */}
+          <div className="flex border-b border-gray-200">
+            {[
+              { id: 'general', label: 'General', icon: Search },
+              { id: 'productos', label: 'Productos', icon: Tag },
+              { id: 'ubicacion', label: 'Ubicación', icon: MapPin },
+              { id: 'especialidades', label: 'Especialidades', icon: Star }
+            ].map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id as any)}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors ${activeTab === id
+                    ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                  }`}
+              >
+                <Icon size={16} />
+                {label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Tabs de navegación */}
-        <div className="flex border-b border-gray-200">
-          {[
-            { id: 'general', label: 'General', icon: Search },
-            { id: 'productos', label: 'Productos', icon: Tag },
-            { id: 'ubicacion', label: 'Ubicación', icon: MapPin },
-            { id: 'especialidades', label: 'Especialidades', icon: Star }
-          ].map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id as any)}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors ${activeTab === id
-                  ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                }`}
-            >
-              <Icon size={16} />
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <div className="p-4 space-y-6">
-          {/* Tab General */}
-          {activeTab === 'general' && (
+        {/* Scrollable Content Section */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 space-y-6">
+            {/* Tab General */}
+            {activeTab === 'general' && (
             <div className="space-y-6">
               {/* Búsqueda por dirección */}
               <div>

@@ -1,8 +1,8 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  max-width: 1280px; /* This might be fine for desktop, but consider if it should be edge-to-edge on mobile */
+  margin: 0 auto; /* Centers content if max-width is applied */
+  /* padding: 2rem; */ /* Removed padding, as it might interfere with fixed elements and full-height layout */
+  text-align: center; /* This centers inline content, might not be desired for all app content */
 }
 
 .logo {

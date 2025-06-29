@@ -26,7 +26,7 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     if (location) {
       setUserLocation(location);
-      toast.success("Ubicación detectada correctamente");
+      // toast.success("Ubicación detectada correctamente"); // Removed as per user request (recurring and annoying)
     } else if (error) {
       toast.error(`Error de ubicación: ${error}`);
     }
@@ -34,6 +34,8 @@ const AppContent: React.FC = () => {
 
   const handleLocationClick = () => {
     if (location) {
+      // Consider if a toast is needed here for manual updates, or if UI feedback is sufficient.
+      // For now, let's keep it to confirm the action.
       toast.success("Ubicación actualizada");
     } else {
       toast.error("No se pudo obtener la ubicación");
