@@ -222,6 +222,87 @@ All colors MUST be HSL.
       min-width: 44px;
     }
   }
+
+  /* Animaciones de entrada para elementos del menú de búsqueda */
+  @keyframes slideInFromRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-in-right {
+    animation: slideInFromRight 0.3s ease-out;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.2s ease-out;
+  }
+
+  /* Efectos de glassmorphism para el menú de búsqueda */
+  .search-menu-backdrop {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .search-menu-panel {
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Estilos para chips y badges interactivos */
+  .filter-chip {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateZ(0); /* Optimización de hardware */
+  }
+
+  .filter-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .filter-chip:active {
+    transform: translateY(0);
+  }
+
+  /* Optimizaciones para scroll en móvil */
+  .mobile-scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scroll-snap-type: y proximity;
+  }
+
+  /* Estados de carga y transiciones */
+  .loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
 }
 
 @layer components {
@@ -242,22 +323,106 @@ All colors MUST be HSL.
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
 
-  /* Estilos específicos para el menú de búsqueda */
-  .search-menu-backdrop {
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+  /* Componentes específicos para el menú de búsqueda optimizado */
+  .search-input-enhanced {
+    @apply relative;
   }
 
-  .search-menu-panel {
-    box-shadow: 
-      0 25px 50px -12px rgba(0, 0, 0, 0.25),
-      0 0 0 1px rgba(0, 0, 0, 0.05);
+  .search-input-enhanced input {
+    @apply w-full pl-12 pr-10 py-3 text-base border-2 border-orange-200 rounded-xl;
+    @apply focus:border-orange-500 focus:ring-2 focus:ring-orange-200 focus:outline-none;
+    @apply transition-all duration-200;
   }
 
-  /* Estilos para tarjetas informativas del mapa */
-  .map-info-card {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.95);
+  .search-input-enhanced input:focus {
+    box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.1);
+  }
+
+  .filter-section {
+    @apply space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200;
+  }
+
+  .filter-section h3 {
+    @apply text-sm font-semibold text-gray-700 mb-3;
+  }
+
+  .filter-grid {
+    @apply grid gap-2;
+  }
+
+  .filter-grid-2 {
+    @apply grid-cols-2;
+  }
+
+  .filter-grid-3 {
+    @apply grid-cols-3;
+  }
+
+  .filter-grid-4 {
+    @apply grid-cols-4;
+  }
+
+  .filter-grid-5 {
+    @apply grid-cols-5;
+  }
+
+  /* Botones de filtro mejorados */
+  .filter-button {
+    @apply p-3 rounded-lg border-2 transition-all text-sm font-medium;
+    @apply hover:scale-105 active:scale-95;
+  }
+
+  .filter-button-active {
+    @apply border-orange-500 bg-orange-50 text-orange-700;
+  }
+
+  .filter-button-inactive {
+    @apply border-gray-200 hover:border-orange-300 hover:bg-orange-50;
+  }
+
+  /* Chips de horario con iconos */
+  .time-chip {
+    @apply flex-1 p-2 rounded-lg border transition-all text-xs text-center;
+  }
+
+  .time-chip-active {
+    @apply border-orange-500 bg-orange-50 text-orange-700;
+  }
+
+  .time-chip-inactive {
+    @apply border-gray-200 hover:border-orange-300 hover:bg-orange-50;
+  }
+
+  /* Resultados de búsqueda en tiempo real */
+  .search-results {
+    @apply mt-2 bg-white border border-gray-200 rounded-lg shadow-lg;
+    @apply max-h-40 overflow-y-auto;
+  }
+
+  .search-result-item {
+    @apply w-full text-left px-3 py-2 hover:bg-gray-50;
+    @apply border-b border-gray-100 last:border-b-0;
+    @apply transition-colors duration-150;
+  }
+
+  .search-result-item:hover {
+    @apply bg-orange-50;
+  }
+
+  /* Estados vacíos mejorados */
+  .empty-state {
+    @apply text-center py-12 px-4;
+  }
+
+  .empty-state-icon {
+    @apply text-6xl mb-4 opacity-50;
+  }
+
+  .empty-state-title {
+    @apply text-lg font-semibold text-gray-600 mb-2;
+  }
+
+  .empty-state-description {
+    @apply text-gray-500 max-w-sm mx-auto;
   }
 }
