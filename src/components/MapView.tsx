@@ -372,28 +372,32 @@ const MapView: React.FC = () => {
 
   return (
     <div className="h-full relative">
-      <div ref={mapContainer} className="w-full h-full" style={{ minHeight: '400px' }} />
-
-      {/* Leyenda de colores REMOVED as per user request for less intrusive reference.
-          Category info is on markers (icon/color) and in CategoryFilter.
-      */}
+      {/* Contenedor del mapa con altura específica que respeta el menú inferior */}
+      <div 
+        ref={mapContainer} 
+        className="w-full absolute inset-0"
+        style={{ 
+          height: 'calc(100vh - 3rem - 4rem)', // 100vh - header height - bottom nav height
+          minHeight: '300px' 
+        }} 
+      />
 
       {/* Contador de puntos */}
-      <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 rounded-lg px-3 py-2 shadow-lg z-[1000]">
-        <span className="text-sm font-medium text-gray-700">
-          {filteredFerias.length} puntos encontrados
+      <div className="absolute bottom-16 left-3 bg-white bg-opacity-90 rounded-lg px-2.5 py-1.5 shadow-lg z-[1000]">
+        <span className="text-xs font-medium text-gray-700">
+          {filteredFerias.length} puntos
         </span>
       </div>
 
       {/* Botón para centrar en usuario */}
-      <div className="absolute bottom-4 right-4 z-[1000]">
+      <div className="absolute bottom-16 right-3 z-[1000]">
         <Button
           onClick={centerOnUser}
           size="sm"
-          className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+          className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg h-8 w-8 p-0"
           title="Centrar en mi ubicación"
         >
-          <Navigation className="w-4 h-4" />
+          <Navigation className="w-3.5 h-3.5" />
         </Button>
       </div>
     </div>

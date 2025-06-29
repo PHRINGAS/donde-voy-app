@@ -43,14 +43,14 @@ const AppContent: React.FC = () => {
     switch (activeTab) {
       case 'map':
         return (
-          <div className="flex-1 pb-16">
+          <div className="flex-1 relative">
             <MapView />
           </div>
         );
 
       case 'reminders':
         return (
-          <div className="flex-1 overflow-y-auto pb-16">
+          <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '4rem' }}>
             <ReminderSystem />
           </div>
         );
@@ -58,7 +58,7 @@ const AppContent: React.FC = () => {
       case 'list':
       default:
         return (
-          <div className="flex-1 overflow-y-auto pb-16">
+          <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '4rem' }}>
             {/* Filtro de categorías compacto */}
             <div className="p-3">
               <CategoryFilter />
@@ -118,7 +118,7 @@ const AppContent: React.FC = () => {
       {/* Contenido principal */}
       {renderContent()}
 
-      {/* Navegación inferior fija - Siempre visible */}
+      {/* Navegación inferior fija - Siempre visible por encima del mapa */}
       <BottomNavigation
         activeTab={activeTab}
         onTabChange={setActiveTab}
