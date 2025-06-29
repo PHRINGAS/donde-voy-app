@@ -13,11 +13,20 @@ const CategoryFilter: React.FC = () => {
         { id: 'Vegano', label: 'Vegano', icon: '🥗' }
     ];
 
+    // ARREGLA EL BUG DEL CONTADOR VEGANO
     const getCategoryCount = (category: string) => {
         if (category === 'Todos') return ferias.length;
+        
+        // Para categorías principales
+        if (['Mercados', 'Ferias', 'Cultura'].includes(category)) {
+            return ferias.filter(feria => feria.categoria === category).length;
+        }
+        
+        // Para especialidades como Orgánico y Vegano
         return ferias.filter(feria => 
-            feria.categoria === category || 
-            feria.especialidad.some(esp => esp.toLowerCase().includes(category.toLowerCase()))
+            feria.especialidad.some(esp => esp.toLowerCase().includes(category.toLowerCase())) ||
+            feria.etiquetas.some(tag => tag.toLowerCase().includes(category.toLowerCase())) ||
+            feria.productos.some(prod => prod.toLowerCase().includes(category.toLowerCase()))
         ).length;
     };
 

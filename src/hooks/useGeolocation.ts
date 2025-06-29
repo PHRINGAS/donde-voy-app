@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { UserLocation } from '../types';
 import { toast } from 'sonner';
@@ -10,25 +9,41 @@ export const useGeolocation = () => {
   const lastNotificationTime = useRef<number>(0);
   const locationLostTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const showLocationNotification = (isFirstTime: boolean = false) => {
+  // ELIMINA "UBICACIÓN ACTIVA" Y MEJORA NOTIFICACIONES
+  const showLocationUpdate = () => {
+    // Solo mostrar cuando se actualiza manualmente
     const now = Date.now();
     const timeSinceLastNotification = now - lastNotificationTime.current;
     
-    // Mostrar notificación solo si es la primera vez o han pasado más de 5 minutos
-    if (isFirstTime || timeSinceLastNotification > 5 * 60 * 1000) {
-      toast.success("📍 Ubicación activa - Feriando te mantendrá actualizado", {
-        duration: 4000,
-        position: 'top-center'
-      });
+    // Mostrar notificación solo si han pasado más de 5 minutos
+    if (timeSinceLastNotification > 5 * 60 * 1000) {
+      showNotification('📍 Ubicación actualizada', 2000);
       lastNotificationTime.current = now;
     }
   };
 
   const handleLocationLost = () => {
-    toast.warning("📍 Ubicación perdida - Intentando reconectar...", {
-      duration: 3000,
-      position: 'top-center'
-    });
+    showNotification('📍 Ubicación perdida - Intentando reconectar...', 3000);
+  };
+
+  // Función mejorada de notificaciones
+  const showNotification = (message: string, duration: number = 3000) => {
+    const notification = document.createElement('div');
+    notification.className = 'location-notification';
+    notification.innerHTML = `<span>${message}</span>`;
+    
+    document.body.appendChild(notification);
+    
+    // Animación de entrada
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 10);
+    
+    // Remover después de duration
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => notification.remove(), 300);
+    }, duration);
   };
 
   useEffect(() => {
@@ -37,8 +52,6 @@ export const useGeolocation = () => {
       setLoading(false);
       return;
     }
-
-    let isFirstLocation = true;
 
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
@@ -56,9 +69,7 @@ export const useGeolocation = () => {
           locationLostTimeout.current = null;
         }
         
-        // Mostrar notificación de ubicación activa
-        showLocationNotification(isFirstLocation);
-        isFirstLocation = false;
+        // NO mostrar notificación automática de "ubicación activa"
       },
       (error) => {
         setError(error.message);

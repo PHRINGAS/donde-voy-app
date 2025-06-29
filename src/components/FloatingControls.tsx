@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, MapPin, Layers } from 'lucide-react';
+import { Search, MapPin } from 'lucide-react';
 
 interface FloatingControlsProps {
   onSearchClick: () => void;
@@ -12,11 +12,6 @@ const FloatingControls: React.FC<FloatingControlsProps> = ({
 }) => {
   return (
     <>
-      {/* Brand flotante */}
-      <div className="app-brand">
-        🤔 Donde Voy?
-      </div>
-
       {/* Búsqueda flotante */}
       <div className="floating-search">
         <input 
@@ -27,7 +22,7 @@ const FloatingControls: React.FC<FloatingControlsProps> = ({
         />
       </div>
 
-      {/* Controles laterales */}
+      {/* Controles laterales - SIN BOTÓN DE CAPAS */}
       <div className="map-controls">
         <button 
           className="control-btn"
@@ -35,13 +30,6 @@ const FloatingControls: React.FC<FloatingControlsProps> = ({
           title="Mi ubicación"
         >
           <MapPin size={20} className="text-orange-500" />
-        </button>
-        
-        <button 
-          className="control-btn"
-          title="Capas del mapa"
-        >
-          <Layers size={20} className="text-gray-600" />
         </button>
       </div>
     </>

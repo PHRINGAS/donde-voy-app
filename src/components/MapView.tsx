@@ -8,7 +8,6 @@ import { useApp } from '../contexts/AppContext';
 import { Feria } from '../types';
 import { Button } from './ui/button';
 import { Navigation, X } from 'lucide-react';
-import { getClosestPoints } from '../utils/dataProcessor';
 
 // Fix para los iconos de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -26,7 +25,7 @@ const MapView: React.FC = () => {
   const [isUserMovingMap, setIsUserMovingMap] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<Feria | null>(null);
 
-  const { filteredFerias, userLocation } = useApp();
+  const { filteredFerias, userLocation, favorites, toggleFavorite, isFavorite } = useApp();
 
   // Función para calcular altura del mapa dinámicamente
   const adjustMapHeight = () => {
@@ -170,17 +169,6 @@ const MapView: React.FC = () => {
     }
   };
 
-  // Función para filtrar por distancia
-  const filterNearestPlaces = (places: Feria[], userLat: number, userLng: number, limit: number) => {
-    return places
-      .map(place => ({
-        ...place,
-        distance: calculateDistance(userLat, userLng, place.lat, place.lng)
-      }))
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, limit);
-  };
-
   // Función para calcular distancia
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
     const R = 6371e3; // Radio de la Tierra en metros
@@ -197,7 +185,7 @@ const MapView: React.FC = () => {
     return R * c;
   };
 
-  // Función para crear tarjeta informativa mejorada
+  // Función para crear tarjeta informativa mejorada con favoritos
   const createInfoCard = (point: Feria) => {
     const distanceText = point.distancia 
       ? point.distancia < 1000 
@@ -205,21 +193,35 @@ const MapView: React.FC = () => {
         : `${(point.distancia / 1000).toFixed(1)} km`
       : '';
 
+    const isLiked = isFavorite(point.id);
+
     return (
       <div className="fixed top-20 left-4 right-4 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[1100] max-w-sm mx-auto animate-fade-in-up">
         <div className="p-5">
-          {/* Header */}
+          {/* Header con botón de favorito */}
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1 pr-3">
               <h3 className="text-xl font-bold text-gray-800 leading-tight">{point.nombre}</h3>
               <p className="text-gray-600 text-sm mt-1">{point.direccion}</p>
             </div>
-            <button
-              onClick={() => setSelectedMarker(null)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
-            >
-              <X size={18} className="text-gray-500" />
-            </button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => toggleFavorite(point.id)}
+                className={`p-2 rounded-full transition-all ${
+                  isLiked
+                    ? 'text-red-500 bg-red-50 hover:bg-red-100'
+                    : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                }`}
+              >
+                {isLiked ? '❤️' : '🤍'}
+              </button>
+              <button
+                onClick={() => setSelectedMarker(null)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={18} className="text-gray-500" />
+              </button>
+            </div>
           </div>
           
           {/* Badges */}
@@ -404,19 +406,15 @@ const MapView: React.FC = () => {
     }
   }, [userLocation, isUserMovingMap]);
 
-  // Actualizar marcadores con clustering
+  // MOSTRAR TODOS LOS MARCADORES POR DEFECTO
   useEffect(() => {
     if (!map.current || !markersCluster.current) return;
 
     // Limpiar cluster
     markersCluster.current.clearLayers();
 
+    // MOSTRAR TODOS los marcadores filtrados
     let pointsToShow = filteredFerias;
-
-    // Si hay ubicación del usuario, mostrar solo los 10 más cercanos
-    if (userLocation && filteredFerias.length > 0) {
-      pointsToShow = filterNearestPlaces(filteredFerias, userLocation.lat, userLocation.lng, 10);
-    }
 
     // Agregar marcadores al cluster
     pointsToShow.forEach((point: Feria) => {
@@ -462,6 +460,12 @@ const MapView: React.FC = () => {
 
   return (
     <div className="h-full w-full relative">
+      {/* Logo Feriando flotante */}
+      <div className="app-brand">
+        <span className="brand-icon">📍</span>
+        <span className="brand-text">Feriando</span>
+      </div>
+
       {/* Contenedor del mapa */}
       <div 
         ref={mapContainer} 
@@ -472,11 +476,9 @@ const MapView: React.FC = () => {
       {selectedMarker && createInfoCard(selectedMarker)}
 
       {/* Contador de puntos mejorado */}
-      <div className="absolute bottom-20 left-4 bg-white bg-opacity-95 rounded-xl px-3 py-2 shadow-lg z-[1000]">
+      <div className="map-counter">
         <span className="text-sm font-semibold text-gray-700">
-          {userLocation && filteredFerias.length > 10 
-            ? `10 de ${filteredFerias.length} lugares` 
-            : `${filteredFerias.length} lugares`}
+          {filteredFerias.length} lugares encontrados
         </span>
       </div>
 

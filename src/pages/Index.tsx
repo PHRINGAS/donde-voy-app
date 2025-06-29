@@ -32,7 +32,7 @@ const AppContent: React.FC = () => {
 
   const handleLocationClick = () => {
     if (location) {
-      toast.success("Ubicación actualizada");
+      toast.success("📍 Ubicación actualizada");
     } else {
       toast.error("No se pudo obtener la ubicación");
     }
@@ -106,11 +106,7 @@ const AppContent: React.FC = () => {
                   <h2 className="text-base font-semibold text-gray-800">
                     Lugares disponibles ({filteredFerias.length})
                   </h2>
-                  {location && (
-                    <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                      📍 Ubicación activa
-                    </span>
-                  )}
+                  {/* ELIMINA "UBICACIÓN ACTIVA" */}
                 </div>
 
                 {filteredFerias.map(feria => (
