@@ -92,7 +92,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-[1100] flex animate-slide-in-right items-end sm:items-center">
       <div
-        className="bg-white w-full h-full max-w-none sm:max-w-md sm:h-[calc(100%-var(--bottom-nav-height,0px))] ml-auto flex flex-col shadow-2xl rounded-none sm:rounded-2xl"
+        className="bg-white w-full h-full max-w-none flex flex-col shadow-2xl rounded-none"
       >
         {/* Header con glassmorphism */}
         <div className="sticky top-0 z-[1110] bg-white bg-opacity-95 backdrop-blur-lg shadow-sm">
@@ -184,8 +184,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                   key={id}
                   onClick={() => setActiveTab(id as any)}
                   className={`flex items-center gap-2 py-3 px-4 text-sm font-semibold transition-all whitespace-nowrap ${activeTab === id
-                      ? `text-${color}-600 border-b-2 border-${color}-600 bg-${color}-50`
-                      : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    ? `text-${color}-600 border-b-2 border-${color}-600 bg-${color}-50`
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                     }`}
                 >
                   <Icon size={14} />
@@ -216,8 +216,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                           tipo: localFilters.tipo === tipo ? undefined : tipo
                         })}
                         className={`filter-chip ${localFilters.tipo === tipo
-                            ? 'filter-chip-active'
-                            : 'filter-chip-inactive'
+                          ? 'filter-chip-active'
+                          : 'filter-chip-inactive'
                           }`}
                       >
                         {tipo}
@@ -245,8 +245,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                           horarioTipo: localFilters.horarioTipo === value ? undefined : value as any
                         })}
                         className={`p-3 rounded-xl border-2 transition-all text-xs text-center ${localFilters.horarioTipo === value
-                            ? 'border-orange-500 bg-orange-50 text-orange-700'
-                            : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50'
+                          ? 'border-orange-500 bg-orange-50 text-orange-700'
+                          : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50'
                           }`}
                       >
                         <div className="font-bold">{label}</div>
@@ -272,8 +272,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                             dia: localFilters.dia === fullDay ? undefined : fullDay
                           })}
                           className={`p-3 rounded-xl text-xs font-bold transition-all ${localFilters.dia === fullDay
-                              ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
-                              : 'bg-gray-100 hover:bg-orange-100 text-gray-700 hover:scale-105'
+                            ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
+                            : 'bg-gray-100 hover:bg-orange-100 text-gray-700 hover:scale-105'
                             }`}
                         >
                           {dia}
@@ -297,8 +297,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                           distanciaMaxima: localFilters.distanciaMaxima === km * 1000 ? undefined : km * 1000
                         })}
                         className={`p-3 rounded-xl text-sm font-bold transition-all ${localFilters.distanciaMaxima === km * 1000
-                            ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
-                            : 'bg-gray-100 hover:bg-green-100 text-gray-700 hover:scale-105'
+                          ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
+                          : 'bg-gray-100 hover:bg-green-100 text-gray-700 hover:scale-105'
                           }`}
                       >
                         {km} km
@@ -320,8 +320,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                     <label
                       key={producto}
                       className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${isSelected('productos', producto)
-                          ? 'border-purple-500 bg-purple-50 shadow-sm'
-                          : 'border-gray-200 hover:border-purple-200 hover:bg-purple-50'
+                        ? 'border-purple-500 bg-purple-50 shadow-sm'
+                        : 'border-gray-200 hover:border-purple-200 hover:bg-purple-50'
                         }`}
                     >
                       <Checkbox
@@ -459,7 +459,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Footer fijo en la parte inferior */}
-        <div className="fixed bottom-0 left-0 w-full z-[1120] bg-white bg-opacity-95 backdrop-blur-lg shadow-lg px-4 py-3 flex gap-3 sm:static sm:shadow-none sm:bg-opacity-100 sm:px-0 sm:py-0">
+        <div className="fixed bottom-0 left-0 w-full z-[1120] bg-white bg-opacity-95 backdrop-blur-lg shadow-lg px-4 py-3 flex gap-3">
           <Button
             onClick={handleClearFilters}
             variant="outline"
