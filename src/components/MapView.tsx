@@ -25,6 +25,25 @@ const MapView: React.FC = () => {
 
   const { filteredFerias, userLocation } = useApp();
 
+  // Función para calcular altura del mapa dinámicamente
+  const adjustMapHeight = () => {
+    if (!mapContainer.current) return;
+    
+    const headerHeight = 56; // Altura del header compactado
+    const menuHeight = 56; // Altura del menú inferior
+    const windowHeight = window.innerHeight;
+    
+    const mapHeight = windowHeight - headerHeight - menuHeight;
+    mapContainer.current.style.height = `${mapHeight}px`;
+    
+    // Invalidar el tamaño del mapa
+    if (map.current) {
+      setTimeout(() => {
+        map.current!.invalidateSize();
+      }, 100);
+    }
+  };
+
   // Colores para diferentes categorías
   const getMarkerColor = (categoria: string, tipo: string): string => {
     const categoryColors: { [key: string]: string } = {
@@ -217,6 +236,9 @@ const MapView: React.FC = () => {
     if (!mapContainer.current || map.current) return;
 
     try {
+      // Ajustar altura inicial
+      adjustMapHeight();
+
       map.current = L.map(mapContainer.current, {
         center: [-34.6037, -58.3816],
         zoom: 12,
@@ -247,6 +269,25 @@ const MapView: React.FC = () => {
         map.current.remove();
         map.current = null;
       }
+    };
+  }, []);
+
+  // Escuchar eventos de cambio de tamaño y activación de pestaña
+  useEffect(() => {
+    const handleResize = () => {
+      adjustMapHeight();
+    };
+
+    const handleMapTabActivated = () => {
+      adjustMapHeight();
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('mapTabActivated', handleMapTabActivated);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mapTabActivated', handleMapTabActivated);
     };
   }, []);
 

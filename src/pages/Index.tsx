@@ -38,6 +38,17 @@ const AppContent: React.FC = () => {
     }
   };
 
+  // Función para invalidar el tamaño del mapa cuando se activa la pestaña
+  useEffect(() => {
+    if (activeTab === 'map') {
+      // Pequeño delay para asegurar que el DOM esté listo
+      setTimeout(() => {
+        const mapEvent = new CustomEvent('mapTabActivated');
+        window.dispatchEvent(mapEvent);
+      }, 100);
+    }
+  }, [activeTab]);
+
   const renderContent = () => {
     switch (activeTab) {
       case 'map':

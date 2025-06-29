@@ -102,6 +102,12 @@ All colors MUST be HSL.
   html, body, #root {
     height: 100%;
     overflow: hidden; /* Prevenir scroll en el body */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    -webkit-overflow-scrolling: touch;
   }
   
   /* Mejoras para dispositivos móviles */
@@ -111,6 +117,15 @@ All colors MUST be HSL.
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
+  }
+  
+  /* Safe areas para dispositivos con notch */
+  .header {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .bottom-menu {
+    padding-bottom: env(safe-area-inset-bottom);
   }
   
   /* Animaciones personalizadas */
