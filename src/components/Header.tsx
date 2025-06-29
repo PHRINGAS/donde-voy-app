@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchClick, onLocationClick }) => {
   const tiposUnicos = new Set(ferias.map(f => f.tipo)).size;
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+    <header className="bg-white shadow-sm border-b border-gray-200 w-full">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-12 sm:h-14">
           {/* Logo y título - Reducido */}

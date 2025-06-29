@@ -21,6 +21,7 @@ const MapView: React.FC = () => {
   const userMarker = useRef<L.Marker | null>(null);
   const feriaMarkers = useRef<L.Marker[]>([]);
   const [isUserMovingMap, setIsUserMovingMap] = useState(false);
+  const [currentOpenPopup, setCurrentOpenPopup] = useState<L.Popup | null>(null);
 
   const { filteredFerias, userLocation } = useApp();
 
@@ -116,37 +117,55 @@ const MapView: React.FC = () => {
     }
   };
 
-  // Función para obtener los puntos más cercanos (máximo 10)
-  const getClosestPointsToShow = (points: Feria[], userLat: number, userLng: number) => {
+  // Función para obtener solo los 10 puntos más cercanos
+  const getClosestMarkersToShow = (points: Feria[], userLat: number, userLng: number) => {
     return getClosestPoints(points, userLat, userLng, 10);
   };
 
-  // Función para calcular el tamaño del marcador basado en la distancia y zoom
-  const getMarkerSize = (point: Feria, isClosest: boolean, zoom: number): number => {
-    if (isClosest) {
-      return 30; // Tamaño normal para los puntos más cercanos
-    }
+  // Función para crear popup persistente
+  const createPersistentPopup = (point: Feria) => {
+    const popupContent = `
+      <div style="padding: 12px; min-width: 200px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <h3 style="font-weight: 600; font-size: 16px; margin: 0; flex: 1;">${point.nombre}</h3>
+          <button onclick="this.closest('.leaflet-popup').style.display='none'" 
+                  style="background: none; border: none; font-size: 18px; cursor: pointer; color: #666; margin-left: 8px;">×</button>
+        </div>
+        <p style="color: #666; font-size: 14px; margin-bottom: 8px;">${point.direccion}</p>
+        <div style="margin-bottom: 8px;">
+          <span style="
+            background: #fed7aa; 
+            color: #c2410c; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 12px;
+          ">${point.tipo}</span>
+          <span style="
+            background: #dbeafe; 
+            color: #1e40af; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 12px;
+            margin-left: 4px;
+          ">${point.categoria}</span>
+        </div>
+        <p style="color: #666; font-size: 12px; margin-bottom: 4px;">
+          <strong>Horarios:</strong> ${point.horarios.apertura} - ${point.horarios.cierre}
+        </p>
+        <p style="color: #666; font-size: 12px; margin-bottom: 4px;">
+          <strong>Días:</strong> ${point.diasFuncionamiento.join(', ')}
+        </p>
+        ${point.distancia ? `
+          <p style="color: #2563eb; font-size: 12px; font-weight: 500;">
+            📍 ${point.distancia < 1000 ?
+          `${Math.round(point.distancia)} m` :
+          `${(point.distancia / 1000).toFixed(1)} km`} de distancia
+          </p>
+        ` : ''}
+      </div>
+    `;
 
-    // Tamaño base del 20% para los demás
-    let baseSize = 6; // 20% de 30px
-
-    // Aumentar tamaño basado en la distancia y zoom
-    if (point.distancia && point.distancia < 2000) { // Dentro de 2km
-      baseSize = Math.max(baseSize, 12);
-    }
-
-    if (point.distancia && point.distancia < 1000) { // Dentro de 1km
-      baseSize = Math.max(baseSize, 18);
-    }
-
-    // Ajustar por zoom
-    if (zoom >= 15) {
-      baseSize = Math.min(baseSize * 1.5, 25);
-    } else if (zoom >= 13) {
-      baseSize = Math.min(baseSize * 1.2, 20);
-    }
-
-    return baseSize;
+    return popupContent;
   };
 
   // Inicializar mapa
@@ -172,6 +191,14 @@ const MapView: React.FC = () => {
         setIsUserMovingMap(true);
       });
 
+      // Manejar clics en el mapa para cerrar popups
+      map.current.on('click', () => {
+        if (currentOpenPopup) {
+          map.current!.closePopup(currentOpenPopup);
+          setCurrentOpenPopup(null);
+        }
+      });
+
       console.log('Mapa inicializado correctamente');
     } catch (error) {
       console.error('Error al inicializar el mapa:', error);
@@ -183,7 +210,7 @@ const MapView: React.FC = () => {
         map.current = null;
       }
     };
-  }, []);
+  }, [currentOpenPopup]);
 
   // Actualizar ubicación del usuario
   useEffect(() => {
@@ -205,7 +232,7 @@ const MapView: React.FC = () => {
     }
   }, [userLocation, isUserMovingMap]);
 
-  // Actualizar marcadores de puntos
+  // Actualizar marcadores de puntos - Solo mostrar los 10 más cercanos
   useEffect(() => {
     if (!map.current) return;
 
@@ -215,120 +242,53 @@ const MapView: React.FC = () => {
     });
     feriaMarkers.current = [];
 
-    // Si no hay ubicación del usuario, mostrar todos los puntos en tamaño normal
-    if (!userLocation) {
-      filteredFerias.forEach((point: Feria) => {
-        const markerColor = getMarkerColor(point.categoria, point.tipo);
+    let pointsToShow = filteredFerias;
 
-        const marker = L.marker([point.lat, point.lng], {
-          icon: createPointIcon(markerColor, 30, point.categoria)
-        }).addTo(map.current!);
-
-        // Crear popup
-        const popupContent = `
-          <div style="padding: 12px; min-width: 200px;">
-            <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${point.nombre}</h3>
-            <p style="color: #666; font-size: 14px; margin-bottom: 8px;">${point.direccion}</p>
-            <div style="margin-bottom: 8px;">
-              <span style="
-                background: #fed7aa; 
-                color: #c2410c; 
-                padding: 4px 8px; 
-                border-radius: 12px; 
-                font-size: 12px;
-              ">${point.tipo}</span>
-              <span style="
-                background: #dbeafe; 
-                color: #1e40af; 
-                padding: 4px 8px; 
-                border-radius: 12px; 
-                font-size: 12px;
-                margin-left: 4px;
-              ">${point.categoria}</span>
-            </div>
-            <p style="color: #666; font-size: 12px; margin-bottom: 4px;">
-              <strong>Horarios:</strong> ${point.horarios.apertura} - ${point.horarios.cierre}
-            </p>
-            <p style="color: #666; font-size: 12px; margin-bottom: 4px;">
-              <strong>Días:</strong> ${point.diasFuncionamiento.join(', ')}
-            </p>
-          </div>
-        `;
-
-        marker.bindPopup(popupContent);
-        feriaMarkers.current.push(marker);
-      });
-
-      // Ajustar vista para mostrar todos los puntos
-      if (filteredFerias.length > 0 && !isUserMovingMap) {
-        const group = new L.FeatureGroup(feriaMarkers.current);
-        try {
-          map.current.fitBounds(group.getBounds().pad(0.1));
-        } catch (error) {
-          console.log('No se pudo ajustar los límites del mapa');
-        }
-      }
-      return;
+    // Si hay ubicación del usuario, mostrar solo los 10 más cercanos
+    if (userLocation && filteredFerias.length > 0) {
+      pointsToShow = getClosestMarkersToShow(filteredFerias, userLocation.lat, userLocation.lng);
+      console.log(`Mostrando ${pointsToShow.length} marcadores más cercanos de ${filteredFerias.length} total`);
     }
 
-    // Obtener los 10 puntos más cercanos
-    const closestPoints = getClosestPointsToShow(filteredFerias, userLocation.lat, userLocation.lng);
-    const currentZoom = map.current.getZoom();
-
     // Agregar nuevos marcadores
-    filteredFerias.forEach((point: Feria) => {
-      const isClosest = closestPoints.some(cp => cp.id === point.id);
-      const markerSize = getMarkerSize(point, isClosest, currentZoom);
+    pointsToShow.forEach((point: Feria) => {
       const markerColor = getMarkerColor(point.categoria, point.tipo);
+      const markerSize = 30; // Tamaño estándar para los marcadores más cercanos
 
       const marker = L.marker([point.lat, point.lng], {
         icon: createPointIcon(markerColor, markerSize, point.categoria)
       }).addTo(map.current!);
 
-      // Crear popup
-      const popupContent = `
-        <div style="padding: 12px; min-width: 200px;">
-          <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${point.nombre}</h3>
-          <p style="color: #666; font-size: 14px; margin-bottom: 8px;">${point.direccion}</p>
-          <div style="margin-bottom: 8px;">
-            <span style="
-              background: #fed7aa; 
-              color: #c2410c; 
-              padding: 4px 8px; 
-              border-radius: 12px; 
-              font-size: 12px;
-            ">${point.tipo}</span>
-            <span style="
-              background: #dbeafe; 
-              color: #1e40af; 
-              padding: 4px 8px; 
-              border-radius: 12px; 
-              font-size: 12px;
-              margin-left: 4px;
-            ">${point.categoria}</span>
-          </div>
-          <p style="color: #666; font-size: 12px; margin-bottom: 4px;">
-            <strong>Horarios:</strong> ${point.horarios.apertura} - ${point.horarios.cierre}
-          </p>
-          <p style="color: #666; font-size: 12px; margin-bottom: 4px;">
-            <strong>Días:</strong> ${point.diasFuncionamiento.join(', ')}
-          </p>
-          ${point.distancia ? `
-            <p style="color: #2563eb; font-size: 12px; font-weight: 500;">
-              📍 ${point.distancia < 1000 ?
-            `${Math.round(point.distancia)} m` :
-            `${(point.distancia / 1000).toFixed(1)} km`} de distancia
-            </p>
-          ` : ''}
-        </div>
-      `;
+      // Crear popup persistente
+      const popupContent = createPersistentPopup(point);
+      const popup = L.popup({
+        closeButton: false, // Deshabilitamos el botón de cierre por defecto
+        autoClose: false,   // No cerrar automáticamente
+        closeOnClick: false, // No cerrar al hacer clic en el mapa
+        closeOnEscapeKey: true // Permitir cerrar con Escape
+      }).setContent(popupContent);
 
-      marker.bindPopup(popupContent);
+      marker.bindPopup(popup);
+
+      // Manejar clic en marcador
+      marker.on('click', (e) => {
+        e.originalEvent.stopPropagation(); // Prevenir que el clic se propague al mapa
+        
+        // Cerrar popup anterior si existe
+        if (currentOpenPopup && currentOpenPopup !== popup) {
+          map.current!.closePopup(currentOpenPopup);
+        }
+        
+        // Abrir nuevo popup
+        marker.openPopup();
+        setCurrentOpenPopup(popup);
+      });
+
       feriaMarkers.current.push(marker);
     });
 
-    // Solo ajustar vista automáticamente si no está siendo movido manualmente
-    if (filteredFerias.length > 0 && !isUserMovingMap) {
+    // Ajustar vista para mostrar todos los puntos visibles
+    if (pointsToShow.length > 0 && !isUserMovingMap) {
       const group = new L.FeatureGroup(feriaMarkers.current);
       if (userMarker.current) {
         group.addLayer(userMarker.current);
@@ -339,36 +299,7 @@ const MapView: React.FC = () => {
         console.log('No se pudo ajustar los límites del mapa');
       }
     }
-  }, [filteredFerias, userLocation, isUserMovingMap]);
-
-  // Actualizar tamaños de marcadores cuando cambia el zoom
-  useEffect(() => {
-    if (!map.current || !userLocation) return;
-
-    const updateMarkerSizes = () => {
-      const currentZoom = map.current!.getZoom();
-      const closestPoints = getClosestPointsToShow(filteredFerias, userLocation.lat, userLocation.lng);
-
-      feriaMarkers.current.forEach((marker, index) => {
-        const point = filteredFerias[index];
-        if (point) {
-          const isClosest = closestPoints.some(cp => cp.id === point.id);
-          const newSize = getMarkerSize(point, isClosest, currentZoom);
-          const markerColor = getMarkerColor(point.categoria, point.tipo);
-
-          marker.setIcon(createPointIcon(markerColor, newSize, point.categoria));
-        }
-      });
-    };
-
-    map.current.on('zoomend', updateMarkerSizes);
-
-    return () => {
-      if (map.current) {
-        map.current.off('zoomend', updateMarkerSizes);
-      }
-    };
-  }, [filteredFerias, userLocation]);
+  }, [filteredFerias, userLocation, isUserMovingMap, currentOpenPopup]);
 
   return (
     <div className="h-full relative">
@@ -385,7 +316,9 @@ const MapView: React.FC = () => {
       {/* Contador de puntos */}
       <div className="absolute bottom-16 left-3 bg-white bg-opacity-90 rounded-lg px-2.5 py-1.5 shadow-lg z-[1000]">
         <span className="text-xs font-medium text-gray-700">
-          {filteredFerias.length} puntos
+          {userLocation && filteredFerias.length > 10 
+            ? `10 de ${filteredFerias.length} puntos` 
+            : `${filteredFerias.length} puntos`}
         </span>
       </div>
 

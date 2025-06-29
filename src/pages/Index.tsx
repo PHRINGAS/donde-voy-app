@@ -43,14 +43,14 @@ const AppContent: React.FC = () => {
     switch (activeTab) {
       case 'map':
         return (
-          <div className="flex-1 relative">
+          <div className="flex-1 relative" style={{ height: 'calc(100vh - 3rem - 4rem)' }}>
             <MapView />
           </div>
         );
 
       case 'reminders':
         return (
-          <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '4rem' }}>
+          <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '4rem', height: 'calc(100vh - 3rem - 4rem)' }}>
             <ReminderSystem />
           </div>
         );
@@ -58,7 +58,7 @@ const AppContent: React.FC = () => {
       case 'list':
       default:
         return (
-          <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '4rem' }}>
+          <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '4rem', height: 'calc(100vh - 3rem - 4rem)' }}>
             {/* Filtro de categorías compacto */}
             <div className="p-3">
               <CategoryFilter />
@@ -109,22 +109,29 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header
-        onSearchClick={() => setShowSearch(true)}
-        onLocationClick={handleLocationClick}
-      />
+    <div className="min-h-screen bg-gray-50 flex flex-col overflow-hidden">
+      {/* Header fijo */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Header
+          onSearchClick={() => setShowSearch(true)}
+          onLocationClick={handleLocationClick}
+        />
+      </div>
 
-      {/* Contenido principal */}
-      {renderContent()}
+      {/* Contenido principal con margen superior para el header */}
+      <div className="flex-1 mt-12 sm:mt-14">
+        {renderContent()}
+      </div>
 
       {/* Navegación inferior fija - Siempre visible por encima del mapa */}
-      <BottomNavigation
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onFavoritesClick={() => setShowFavorites(true)}
-        favoriteCount={favorites.length}
-      />
+      <div className="fixed bottom-0 left-0 right-0 z-50">
+        <BottomNavigation
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onFavoritesClick={() => setShowFavorites(true)}
+          favoriteCount={favorites.length}
+        />
+      </div>
 
       {/* Modales */}
       <SearchPanel
