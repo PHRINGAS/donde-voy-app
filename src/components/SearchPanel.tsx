@@ -49,25 +49,26 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[1001] flex">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[1100] flex">
       <div className="bg-white w-full max-w-md ml-auto h-full flex flex-col">
-        {/* Header compacto con espaciado reducido */}
-        <div className="sticky top-0 z-10 bg-white shadow-sm">
-          {/* Título con espaciado vertical reducido */}
-          <div className="px-4 py-2 border-b border-gray-200">
+        {/* Header fijo con z-index alto y posicionamiento optimizado */}
+        <div className="sticky top-0 z-[1110] bg-white shadow-sm">
+          {/* Título con botón X posicionado debajo del header */}
+          <div className="px-4 py-3 border-b border-gray-200" style={{ marginTop: '56px' }}>
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-800">Buscar Lugares</h2>
               <button
                 onClick={onClose}
-                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors z-[1120]"
+                style={{ position: 'relative' }}
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
           </div>
 
           {/* Tabs con scroll horizontal suave */}
-          <div className="overflow-x-auto scrollbar-hide">
+          <div className="overflow-x-auto scrollbar-hide smooth-scroll">
             <div className="flex border-b border-gray-200 min-w-max px-2">
               {[
                 { id: 'general', label: 'General', icon: Search },
@@ -92,9 +93,19 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Contenido scrolleable */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-4 space-y-6">
+        {/* Área de contenido scrolleable con márgenes optimizados */}
+        <div 
+          className="flex-1 overflow-y-auto smooth-scroll"
+          style={{
+            paddingTop: '16px',
+            paddingLeft: '16px',
+            paddingRight: '16px',
+            marginBottom: '80px', // Evitar que se oculte detrás del menú inferior
+            maxHeight: 'calc(100vh - 200px)', // Altura dinámica según viewport
+            scrollBehavior: 'smooth'
+          }}
+        >
+          <div className="space-y-6 pb-6">
             {/* Tab General */}
             {activeTab === 'general' && (
               <div className="space-y-6">
@@ -132,7 +143,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar tipo de lugar" />
                     </SelectTrigger>
-                    <SelectContent className="z-[1002]">
+                    <SelectContent className="z-[1130]">
                       {ETIQUETAS_SISTEMA.tipos.map(tipo => (
                         <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
                       ))}
@@ -155,7 +166,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar día" />
                     </SelectTrigger>
-                    <SelectContent className="z-[1002]">
+                    <SelectContent className="z-[1130]">
                       {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(dia => (
                         <SelectItem key={dia} value={dia}>{dia}</SelectItem>
                       ))}
@@ -178,7 +189,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar horario" />
                     </SelectTrigger>
-                    <SelectContent className="z-[1002]">
+                    <SelectContent className="z-[1130]">
                       <SelectItem value="mañana">Mañana (8:00-14:00)</SelectItem>
                       <SelectItem value="tarde">Tarde (14:00-20:00)</SelectItem>
                       <SelectItem value="noche">Noche (20:00-00:00)</SelectItem>
@@ -205,22 +216,25 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {/* Tab Productos con layout en columnas */}
+            {/* Tab Productos con layout optimizado */}
             {activeTab === 'productos' && (
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Productos disponibles
                   </label>
-                  {/* Grid de 2 columnas que se adapta al contenido */}
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 max-h-80 overflow-y-auto">
+                  {/* Grid de 2 columnas con scroll suave */}
+                  <div 
+                    className="grid grid-cols-2 gap-x-4 gap-y-3 overflow-y-auto smooth-scroll"
+                    style={{ maxHeight: '320px' }}
+                  >
                     {ETIQUETAS_SISTEMA.productos.map(producto => (
-                      <div key={producto} className="flex items-center space-x-2">
+                      <div key={producto} className="flex items-start space-x-2">
                         <Checkbox
                           id={producto}
                           checked={isSelected('productos', producto)}
                           onCheckedChange={() => handleMultiSelect('productos', producto)}
-                          className="h-4 w-4"
+                          className="h-4 w-4 mt-0.5 flex-shrink-0"
                         />
                         <label
                           htmlFor={producto}
@@ -238,20 +252,23 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
             {/* Tab Ubicación con badges en filas */}
             {activeTab === 'ubicacion' && (
               <div className="space-y-6">
-                {/* Barrio con layout en filas */}
+                {/* Barrio con scroll suave */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Barrio
                   </label>
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+                  <div 
+                    className="flex flex-wrap gap-2 overflow-y-auto smooth-scroll"
+                    style={{ maxHeight: '200px' }}
+                  >
                     {ETIQUETAS_SISTEMA.barrios.map(barrio => (
                       <Badge
                         key={barrio}
                         variant={isSelected('barrio', barrio) ? "default" : "outline"}
-                        className={`cursor-pointer text-sm ${
+                        className={`cursor-pointer text-sm transition-all duration-200 ${
                           isSelected('barrio', barrio)
-                            ? 'bg-orange-500 hover:bg-orange-600'
-                            : 'hover:bg-orange-50'
+                            ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                            : 'hover:bg-orange-50 hover:border-orange-300'
                         }`}
                         onClick={() => handleMultiSelect('barrio', barrio)}
                       >
@@ -263,20 +280,23 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
 
                 <Separator />
 
-                {/* Comuna con layout en filas */}
+                {/* Comuna con scroll suave */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Comuna
                   </label>
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+                  <div 
+                    className="flex flex-wrap gap-2 overflow-y-auto smooth-scroll"
+                    style={{ maxHeight: '200px' }}
+                  >
                     {ETIQUETAS_SISTEMA.comunas.map(comuna => (
                       <Badge
                         key={comuna}
                         variant={isSelected('comuna', comuna) ? "default" : "outline"}
-                        className={`cursor-pointer text-sm ${
+                        className={`cursor-pointer text-sm transition-all duration-200 ${
                           isSelected('comuna', comuna)
-                            ? 'bg-orange-500 hover:bg-orange-600'
-                            : 'hover:bg-orange-50'
+                            ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                            : 'hover:bg-orange-50 hover:border-orange-300'
                         }`}
                         onClick={() => handleMultiSelect('comuna', comuna)}
                       >
@@ -288,23 +308,26 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {/* Tab Especialidades con layout en filas */}
+            {/* Tab Especialidades con scroll suave */}
             {activeTab === 'especialidades' && (
               <div className="space-y-6">
-                {/* Especialidades con layout en filas */}
+                {/* Especialidades */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Especialidades
                   </label>
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+                  <div 
+                    className="flex flex-wrap gap-2 overflow-y-auto smooth-scroll"
+                    style={{ maxHeight: '200px' }}
+                  >
                     {ETIQUETAS_SISTEMA.especialidades.map(especialidad => (
                       <Badge
                         key={especialidad}
                         variant={isSelected('especialidad', especialidad) ? "default" : "outline"}
-                        className={`cursor-pointer text-sm ${
+                        className={`cursor-pointer text-sm transition-all duration-200 ${
                           isSelected('especialidad', especialidad)
-                            ? 'bg-green-500 hover:bg-green-600'
-                            : 'hover:bg-green-50'
+                            ? 'bg-green-500 hover:bg-green-600 text-white'
+                            : 'hover:bg-green-50 hover:border-green-300'
                         }`}
                         onClick={() => handleMultiSelect('especialidad', especialidad)}
                       >
@@ -316,20 +339,23 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
 
                 <Separator />
 
-                {/* Servicios con layout en filas */}
+                {/* Servicios */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Servicios disponibles
                   </label>
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+                  <div 
+                    className="flex flex-wrap gap-2 overflow-y-auto smooth-scroll"
+                    style={{ maxHeight: '200px' }}
+                  >
                     {ETIQUETAS_SISTEMA.servicios.map(servicio => (
                       <Badge
                         key={servicio}
                         variant={isSelected('servicios', servicio) ? "default" : "outline"}
-                        className={`cursor-pointer text-sm ${
+                        className={`cursor-pointer text-sm transition-all duration-200 ${
                           isSelected('servicios', servicio)
-                            ? 'bg-blue-500 hover:bg-blue-600'
-                            : 'hover:bg-blue-50'
+                            ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                            : 'hover:bg-blue-50 hover:border-blue-300'
                         }`}
                         onClick={() => handleMultiSelect('servicios', servicio)}
                       >
@@ -358,23 +384,28 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
 
-            {/* Botones de acción */}
-            <div className="flex space-x-3 pt-4">
-              <Button
-                onClick={handleClearFilters}
-                variant="outline"
-                className="flex-1"
-              >
-                Limpiar
-              </Button>
-              <Button
-                onClick={handleApplyFilters}
-                className="flex-1 bg-orange-500 hover:bg-orange-600"
-              >
-                Aplicar
-              </Button>
-            </div>
+        {/* Botones de acción fijos en la parte inferior */}
+        <div 
+          className="sticky bottom-0 z-[1110] bg-white border-t border-gray-200 p-4"
+          style={{ marginBottom: '0px' }}
+        >
+          <div className="flex space-x-3">
+            <Button
+              onClick={handleClearFilters}
+              variant="outline"
+              className="flex-1 transition-all duration-200 hover:bg-gray-50"
+            >
+              Limpiar
+            </Button>
+            <Button
+              onClick={handleApplyFilters}
+              className="flex-1 bg-orange-500 hover:bg-orange-600 transition-all duration-200"
+            >
+              Aplicar
+            </Button>
           </div>
         </div>
       </div>

@@ -158,9 +158,10 @@ All colors MUST be HSL.
     display: none;
   }
 
-  /* Smooth scrolling para elementos horizontales */
+  /* Smooth scrolling para elementos horizontales y verticales */
   .smooth-scroll {
     scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
   }
 
   /* Estilos para popups del mapa */
@@ -176,6 +177,26 @@ All colors MUST be HSL.
   
   .custom-popup .leaflet-popup-tip {
     background: white;
+  }
+
+  /* Optimizaciones para el menú de búsqueda */
+  .search-panel-content {
+    /* Asegurar que el contenido sea scrolleable sin interferir con elementos fijos */
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Transiciones suaves para badges y botones */
+  .transition-all {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Mejoras de accesibilidad para elementos clickeables */
+  @media (max-width: 768px) {
+    button, .cursor-pointer {
+      min-height: 44px; /* Tamaño mínimo recomendado para touch targets */
+      min-width: 44px;
+    }
   }
 }
 
@@ -195,5 +216,17 @@ All colors MUST be HSL.
   
   .shadow-card-hover {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Estilos específicos para el menú de búsqueda */
+  .search-menu-backdrop {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .search-menu-panel {
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(0, 0, 0, 0.05);
   }
 }

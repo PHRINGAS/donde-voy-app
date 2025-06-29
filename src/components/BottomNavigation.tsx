@@ -15,7 +15,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   favoriteCount
 }) => {
   return (
-    <div className="bg-white border-t border-gray-200 px-2 py-1.5 shadow-lg">
+    <div className="bg-white border-t border-gray-200 px-2 py-1.5 shadow-lg z-[1050]">
       <div className="flex justify-around items-center max-w-md mx-auto">
         <button
           onClick={() => onTabChange('map')}
