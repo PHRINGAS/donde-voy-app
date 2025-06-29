@@ -122,49 +122,9 @@ const MapView: React.FC = () => {
     return getClosestPoints(points, userLat, userLng, 10);
   };
 
-  // Función para crear popup persistente
+  // Función para crear popup persistente (SIMPLIFICADA PARA DEBUGGING)
   const createPersistentPopup = (point: Feria) => {
-    const popupContent = `
-      <div style="padding: 12px; min-width: 200px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-          <h3 style="font-weight: 600; font-size: 16px; margin: 0; flex: 1;">${point.nombre}</h3>
-          <button onclick="this.closest('.leaflet-popup').style.display='none'" 
-                  style="background: none; border: none; font-size: 18px; cursor: pointer; color: #666; margin-left: 8px;">×</button>
-        </div>
-        <p style="color: #666; font-size: 14px; margin-bottom: 8px;">${point.direccion}</p>
-        <div style="margin-bottom: 8px;">
-          <span style="
-            background: #fed7aa; 
-            color: #c2410c; 
-            padding: 4px 8px; 
-            border-radius: 12px; 
-            font-size: 12px;
-          ">${point.tipo}</span>
-          <span style="
-            background: #dbeafe; 
-            color: #1e40af; 
-            padding: 4px 8px; 
-            border-radius: 12px; 
-            font-size: 12px;
-            margin-left: 4px;
-          ">${point.categoria}</span>
-        </div>
-        <p style="color: #666; font-size: 12px; margin-bottom: 4px;">
-          <strong>Horarios:</strong> ${point.horarios.apertura} - ${point.horarios.cierre}
-        </p>
-        <p style="color: #666; font-size: 12px; margin-bottom: 4px;">
-          <strong>Días:</strong> ${point.diasFuncionamiento.join(', ')}
-        </p>
-        ${point.distancia ? `
-          <p style="color: #2563eb; font-size: 12px; font-weight: 500;">
-            📍 ${point.distancia < 1000 ?
-          `${Math.round(point.distancia)} m` :
-          `${(point.distancia / 1000).toFixed(1)} km`} de distancia
-          </p>
-        ` : ''}
-      </div>
-    `;
-
+    const popupContent = `<h3>${point.nombre}</h3><p>Test Pop-up</p><button onclick="this.closest('.leaflet-popup').style.display='none'">Close</button>`;
     return popupContent;
   };
 
