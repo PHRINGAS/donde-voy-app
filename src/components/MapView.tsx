@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { useApp } from '../contexts/AppContext';
 import { Feria } from '../types';
 import { Button } from './ui/button';
-import { Navigation } from 'lucide-react';
+import { Navigation, X } from 'lucide-react';
 import { getClosestPoints } from '../utils/dataProcessor';
 
 // Fix para los iconos de Leaflet
@@ -21,7 +21,7 @@ const MapView: React.FC = () => {
   const userMarker = useRef<L.Marker | null>(null);
   const feriaMarkers = useRef<L.Marker[]>([]);
   const [isUserMovingMap, setIsUserMovingMap] = useState(false);
-  const [currentOpenPopup, setCurrentOpenPopup] = useState<L.Popup | null>(null);
+  const [selectedMarker, setSelectedMarker] = useState<Feria | null>(null);
 
   const { filteredFerias, userLocation } = useApp();
 
@@ -33,7 +33,6 @@ const MapView: React.FC = () => {
       'Cultura': '#9B59B6'
     };
 
-    // Colores específicos por tipo dentro de las categorías
     const typeColors: { [key: string]: string } = {
       'Mercado': '#4ECDC4',
       'Artesanías': '#45B7D1',
@@ -49,8 +48,8 @@ const MapView: React.FC = () => {
     return typeColors[tipo] || categoryColors[categoria] || '#FF8C00';
   };
 
-  // Crear icono personalizado para puntos con tamaño dinámico y efectos hover
-  const createPointIcon = (color: string, size: number = 30, categoria: string) => {
+  // Crear icono personalizado para puntos
+  const createPointIcon = (color: string, size: number = 30, categoria: string, isSelected: boolean = false) => {
     const iconMap: { [key: string]: string } = {
       'Mercados': '🛒',
       'Ferias': '🎪',
@@ -58,35 +57,38 @@ const MapView: React.FC = () => {
     };
 
     const icon = iconMap[categoria] || '📍';
+    const selectedScale = isSelected ? 1.3 : 1;
+    const selectedShadow = isSelected ? '0 6px 25px rgba(0,0,0,0.4)' : '0 2px 10px rgba(0,0,0,0.3)';
 
     return L.divIcon({
       className: 'custom-point-marker',
       html: `
         <div style="
-          width: ${size}px;
-          height: ${size}px;
+          width: ${size * selectedScale}px;
+          height: ${size * selectedScale}px;
           border-radius: 50% 50% 50% 0;
           background: ${color};
-          border: 2px solid #fff;
+          border: ${isSelected ? '3px' : '2px'} solid #fff;
           transform: rotate(-45deg);
-          box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+          box-shadow: ${selectedShadow};
           display: flex;
           align-items: center;
           justify-content: center;
           transition: all 0.3s ease;
           cursor: pointer;
-        " onmouseover="this.style.transform='rotate(-45deg) scale(1.2)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.4)';" onmouseout="this.style.transform='rotate(-45deg) scale(1)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.3)';">
+          z-index: ${isSelected ? 1000 : 100};
+        ">
           <div style="
             transform: rotate(45deg);
-            font-size: ${size * 0.4}px;
+            font-size: ${size * selectedScale * 0.4}px;
             color: white;
             font-weight: bold;
           ">${icon}</div>
         </div>
       `,
-      iconSize: [size, size],
-      iconAnchor: [size / 2, size],
-      popupAnchor: [0, -size]
+      iconSize: [size * selectedScale, size * selectedScale],
+      iconAnchor: [size * selectedScale / 2, size * selectedScale],
+      popupAnchor: [0, -size * selectedScale]
     });
   };
 
@@ -102,7 +104,15 @@ const MapView: React.FC = () => {
           background: #007cbf;
           border: 3px solid #fff;
           box-shadow: 0 0 10px rgba(0,123,191,0.5);
+          animation: pulse 2s infinite;
         "></div>
+        <style>
+          @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0,123,191,0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0,123,191,0); }
+            100% { box-shadow: 0 0 0 0 rgba(0,123,191,0); }
+          }
+        </style>
       `,
       iconSize: [20, 20],
       iconAnchor: [10, 10]
@@ -122,56 +132,84 @@ const MapView: React.FC = () => {
     return getClosestPoints(points, userLat, userLng, 10);
   };
 
-  // Función para crear popup persistente con información completa
-  const createPersistentPopup = (point: Feria) => {
+  // Función para crear tarjeta informativa
+  const createInfoCard = (point: Feria) => {
     const distanceText = point.distancia 
       ? point.distancia < 1000 
         ? `${Math.round(point.distancia)} m` 
         : `${(point.distancia / 1000).toFixed(1)} km`
       : '';
 
-    return `
-      <div style="padding: 12px; min-width: 250px; max-width: 300px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-          <h3 style="font-weight: 600; font-size: 16px; margin: 0; flex: 1;">${point.nombre}</h3>
-          <button onclick="this.closest('.leaflet-popup').style.display='none'" 
-                  style="background: #f3f4f6; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; margin-left: 8px; display: flex; align-items: center; justify-content: center;">
-            ✕
-          </button>
-        </div>
-        
-        <p style="color: #666; font-size: 14px; margin: 0 0 8px 0;">${point.direccion}</p>
-        
-        <div style="margin-bottom: 8px;">
-          <span style="background: #fed7aa; color: #c2410c; padding: 4px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px;">
-            ${point.tipo}
-          </span>
-          <span style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 12px; font-size: 12px;">
-            ${point.categoria}
-          </span>
-        </div>
-        
-        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
-          <strong>Horarios:</strong> ${point.horarios.apertura} - ${point.horarios.cierre}
-        </div>
-        
-        <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
-          <strong>Días:</strong> ${point.diasFuncionamiento.join(', ')}
-        </div>
-        
-        ${distanceText ? `
-          <div style="color: #2563eb; font-size: 12px; font-weight: 500; margin-bottom: 8px;">
-            📍 ${distanceText} de distancia
+    return (
+      <div className="fixed top-20 left-4 right-4 bg-white rounded-xl shadow-2xl border border-gray-200 z-[1100] max-w-sm mx-auto">
+        <div className="p-4">
+          {/* Header con botón cerrar */}
+          <div className="flex justify-between items-start mb-3">
+            <h3 className="text-lg font-bold text-gray-800 pr-2">{point.nombre}</h3>
+            <button
+              onClick={() => setSelectedMarker(null)}
+              className="p-1 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+            >
+              <X size={18} className="text-gray-500" />
+            </button>
           </div>
-        ` : ''}
-        
-        ${point.descripcion ? `
-          <div style="font-size: 12px; color: #666; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
-            ${point.descripcion}
+          
+          {/* Dirección */}
+          <p className="text-gray-600 text-sm mb-3">{point.direccion}</p>
+          
+          {/* Badges */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium">
+              {point.tipo}
+            </span>
+            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">
+              {point.categoria}
+            </span>
+            {distanceText && (
+              <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                📍 {distanceText}
+              </span>
+            )}
           </div>
-        ` : ''}
+          
+          {/* Información básica */}
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center text-gray-600">
+              <span className="font-medium mr-2">🕒 Horarios:</span>
+              <span>{point.horarios.apertura} - {point.horarios.cierre}</span>
+            </div>
+            
+            <div className="flex items-start text-gray-600">
+              <span className="font-medium mr-2">📅 Días:</span>
+              <span className="flex-1">{point.diasFuncionamiento.join(', ')}</span>
+            </div>
+            
+            {point.productos && point.productos.length > 0 && (
+              <div className="flex items-start text-gray-600">
+                <span className="font-medium mr-2">🛍️ Productos:</span>
+                <span className="flex-1">{point.productos.slice(0, 3).join(', ')}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Descripción */}
+          {point.descripcion && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <p className="text-xs text-gray-500 leading-relaxed">{point.descripcion}</p>
+            </div>
+          )}
+          
+          {/* Información adicional */}
+          {(point.barrio || point.comuna) && (
+            <div className="mt-2 text-xs text-gray-400">
+              {point.barrio && <span>{point.barrio}</span>}
+              {point.barrio && point.comuna && <span> • </span>}
+              {point.comuna && <span>{point.comuna}</span>}
+            </div>
+          )}
+        </div>
       </div>
-    `;
+    );
   };
 
   // Inicializar mapa
@@ -179,30 +217,24 @@ const MapView: React.FC = () => {
     if (!mapContainer.current || map.current) return;
 
     try {
-      // Crear el mapa con OpenStreetMap
       map.current = L.map(mapContainer.current, {
-        center: [-34.6037, -58.3816], // Buenos Aires
+        center: [-34.6037, -58.3816],
         zoom: 12,
         zoomControl: true
       });
 
-      // Agregar capa de OpenStreetMap
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
       }).addTo(map.current);
 
-      // Detectar cuando el usuario mueve el mapa manualmente
       map.current.on('movestart', () => {
         setIsUserMovingMap(true);
       });
 
-      // Manejar clics en el mapa para cerrar popups
+      // Cerrar tarjeta al hacer clic en el mapa
       map.current.on('click', () => {
-        if (currentOpenPopup) {
-          map.current!.closePopup(currentOpenPopup);
-          setCurrentOpenPopup(null);
-        }
+        setSelectedMarker(null);
       });
 
       console.log('Mapa inicializado correctamente');
@@ -216,29 +248,26 @@ const MapView: React.FC = () => {
         map.current = null;
       }
     };
-  }, [currentOpenPopup]);
+  }, []);
 
   // Actualizar ubicación del usuario
   useEffect(() => {
     if (!map.current || !userLocation) return;
 
-    // Remover marcador anterior del usuario
     if (userMarker.current) {
       map.current.removeLayer(userMarker.current);
     }
 
-    // Crear nuevo marcador del usuario
     userMarker.current = L.marker([userLocation.lat, userLocation.lng], {
       icon: createUserIcon()
     }).addTo(map.current);
 
-    // Solo centrar mapa en ubicación del usuario si no está siendo movido manualmente
     if (!isUserMovingMap) {
       map.current.setView([userLocation.lat, userLocation.lng], 14);
     }
   }, [userLocation, isUserMovingMap]);
 
-  // Actualizar marcadores de puntos - Solo mostrar los 10 más cercanos
+  // Actualizar marcadores de puntos
   useEffect(() => {
     if (!map.current) return;
 
@@ -259,44 +288,30 @@ const MapView: React.FC = () => {
     // Agregar nuevos marcadores
     pointsToShow.forEach((point: Feria) => {
       const markerColor = getMarkerColor(point.categoria, point.tipo);
-      const markerSize = 30; // Tamaño estándar para los marcadores más cercanos
+      const isSelected = selectedMarker?.id === point.id;
+      const markerSize = 30;
 
       const marker = L.marker([point.lat, point.lng], {
-        icon: createPointIcon(markerColor, markerSize, point.categoria)
+        icon: createPointIcon(markerColor, markerSize, point.categoria, isSelected)
       }).addTo(map.current!);
-
-      // Crear popup persistente con información completa
-      const popupContent = createPersistentPopup(point);
-      const popup = L.popup({
-        closeButton: false, // Deshabilitamos el botón de cierre por defecto
-        autoClose: false,   // No cerrar automáticamente
-        closeOnClick: false, // No cerrar al hacer clic en el mapa
-        closeOnEscapeKey: true, // Permitir cerrar con Escape
-        maxWidth: 300,
-        className: 'custom-popup'
-      }).setContent(popupContent);
-
-      marker.bindPopup(popup);
 
       // Manejar clic en marcador
       marker.on('click', (e) => {
-        e.originalEvent.stopPropagation(); // Prevenir que el clic se propague al mapa
+        e.originalEvent.stopPropagation();
+        setSelectedMarker(point);
         
-        // Cerrar popup anterior si existe
-        if (currentOpenPopup && currentOpenPopup !== popup) {
-          map.current!.closePopup(currentOpenPopup);
-        }
-        
-        // Abrir nuevo popup
-        marker.openPopup();
-        setCurrentOpenPopup(popup);
+        // Centrar el mapa en el marcador seleccionado
+        map.current!.setView([point.lat, point.lng], Math.max(map.current!.getZoom(), 15), {
+          animate: true,
+          duration: 0.5
+        });
       });
 
       feriaMarkers.current.push(marker);
     });
 
     // Ajustar vista para mostrar todos los puntos visibles
-    if (pointsToShow.length > 0 && !isUserMovingMap) {
+    if (pointsToShow.length > 0 && !isUserMovingMap && !selectedMarker) {
       const group = new L.FeatureGroup(feriaMarkers.current);
       if (userMarker.current) {
         group.addLayer(userMarker.current);
@@ -307,15 +322,18 @@ const MapView: React.FC = () => {
         console.log('No se pudo ajustar los límites del mapa');
       }
     }
-  }, [filteredFerias, userLocation, isUserMovingMap, currentOpenPopup]);
+  }, [filteredFerias, userLocation, isUserMovingMap, selectedMarker]);
 
   return (
     <div className="h-full w-full relative">
-      {/* Contenedor del mapa que ocupa toda la altura disponible */}
+      {/* Contenedor del mapa */}
       <div 
         ref={mapContainer} 
         className="absolute inset-0 w-full h-full"
       />
+
+      {/* Tarjeta informativa del marcador seleccionado */}
+      {selectedMarker && createInfoCard(selectedMarker)}
 
       {/* Contador de puntos */}
       <div className="absolute bottom-4 left-3 bg-white bg-opacity-90 rounded-lg px-2.5 py-1.5 shadow-lg z-[1000]">

@@ -80,6 +80,23 @@ interface EspacioCulturalData {
     telefono: string;
 }
 
+// Función para renombrar marcadores FIAB
+const renameFIABMarkers = (nombre: string): string => {
+    // Buscar patrón FIAB seguido de número
+    const fiabMatch = nombre.match(/^FIAB\s*(\d+)$/i);
+    if (fiabMatch) {
+        return `Feria ${fiabMatch[1]}`;
+    }
+    
+    // Buscar patrón FIAB con espacios o caracteres adicionales
+    const fiabComplexMatch = nombre.match(/^FIAB[\s\-_]*(\d+)/i);
+    if (fiabComplexMatch) {
+        return `Feria ${fiabComplexMatch[1]}`;
+    }
+    
+    return nombre; // Retornar nombre original si no coincide con el patrón
+};
+
 // Función para convertir el formato de día
 const convertDia = (dia: string): string => {
     const diaMap: { [key: string]: string } = {
@@ -270,17 +287,21 @@ export const processGeoJSONData = (geoJSONData: GeoJSONData): Feria[] => {
         const servicios = generateServicios(props.observacio, props.nombre);
         const etiquetas = generateEtiquetas(productos, tipo, especialidades, servicios);
 
+        // Aplicar renombrado FIAB
+        const nombreProcesado = renameFIABMarkers(props.nombre);
+
         return {
             id: props.id.toString(),
-            nombre: props.nombre,
+            nombre: nombreProcesado,
             direccion: props.direccion,
             lat: lat,
             lng: lng,
             tipo: tipo,
+            categoria: 'Ferias',
             diasFuncionamiento: [convertDia(props.dia)],
             horarios: horarios,
             productos: productos,
-            descripcion: `${props.nombre} - ${props.barrio}, ${props.comuna}${props.observacio ? ` - ${props.observacio}` : ''}`,
+            descripcion: `${nombreProcesado} - ${props.barrio}, ${props.comuna}${props.observacio ? ` - ${props.observacio}` : ''}`,
             telefono: undefined,
             barrio: props.barrio,
             comuna: props.comuna,
@@ -320,9 +341,12 @@ export const processMercadosData = (csvData: string): Feria[] => {
             mercado[header] = values[i];
         });
 
+        // Aplicar renombrado FIAB también a mercados si es necesario
+        const nombreProcesado = renameFIABMarkers(mercado.NOMBRE || 'Mercado');
+
         return {
             id: `mercado_${index + 1}`,
-            nombre: mercado.NOMBRE || 'Mercado',
+            nombre: nombreProcesado,
             direccion: mercado.UBICACION || '',
             lat: parseFloat(mercado.LAT?.replace(',', '.')) || 0,
             lng: parseFloat(mercado.LON?.replace(',', '.')) || 0,
@@ -382,20 +406,8 @@ export const processFeriasCSVData = (csvData: string): Feria[] => {
 
         const diasFuncionamiento = diasMapping[diasRaw] || ['Sábado', 'Domingo'];
 
-        let nombreProcesado = feria.NOMBRE || 'Feria';
-        const originalNombre = feria.NOMBRE || '';
-        if (originalNombre.toUpperCase().startsWith('FIAB')) {
-            const match = originalNombre.match(/FIAB\s*(\d+)/i);
-            if (match && match[1]) {
-                nombreProcesado = `Feria ${match[1]}`;
-            } else {
-                // Fallback if FIAB but no number found, or a more generic name.
-                // For now, let's use a more descriptive FIAB name if number extraction fails,
-                // or simply "Feria Itinerante" and log it.
-                console.warn(`FIAB item '${originalNombre}' could not extract number. Using generic name.`);
-                nombreProcesado = `Feria Itinerante ${feria.ID || index + 1}`; // Make it somewhat unique
-            }
-        }
+        // Aplicar renombrado FIAB
+        const nombreProcesado = renameFIABMarkers(feria.NOMBRE || 'Feria');
 
         return {
             id: `feria_${feria.ID || index + 1}`,
@@ -429,9 +441,12 @@ export const processFeriasCSVData = (csvData: string): Feria[] => {
 // Función para procesar datos de espacios culturales
 export const processEspaciosCulturalesData = (jsonData: EspacioCulturalData[]): Feria[] => {
     return jsonData.map((espacio) => {
+        // Aplicar renombrado FIAB también a espacios culturales si es necesario
+        const nombreProcesado = renameFIABMarkers(espacio.nombre);
+
         return {
             id: espacio.id,
-            nombre: espacio.nombre,
+            nombre: nombreProcesado,
             direccion: espacio.direccion,
             lat: espacio.lat,
             lng: espacio.lng,
@@ -474,7 +489,7 @@ export const unifyAllData = async (): Promise<Feria[]> => {
 
         // Cargar datos de ferias GeoJSON
         console.log('🔄 Cargando datos desde ferias_geo.json...');
-        const feriasGeoJson = await loadFeriasFromGeoJSON(); // Already defined in this file
+        const feriasGeoJson = await loadFeriasFromGeoJSON();
         if (feriasGeoJson.length > 0) {
             console.log(`✅ Se cargaron ${feriasGeoJson.length} puntos desde ferias_geo.json`);
         } else {
@@ -486,19 +501,25 @@ export const unifyAllData = async (): Promise<Feria[]> => {
 
         const addBatchToMap = (batch: Feria[], batchName: string) => {
             let newItemsCount = 0;
+            let renamedCount = 0;
+            
             batch.forEach(item => {
                 if (!item.id) {
                     console.warn(`Item sin ID en ${batchName}, se omitirá o se le asignará uno genérico si es necesario más adelante.`);
-                    // Consider if items without ID should be skipped or given a generated one here
                 }
+                
+                // Verificar si se aplicó renombrado FIAB
+                if (item.nombre.startsWith('Feria ') && !item.nombre.includes('FIAB')) {
+                    renamedCount++;
+                }
+                
                 if (!allDataMap.has(item.id)) {
                     allDataMap.set(item.id, item);
                     newItemsCount++;
-                } else {
-                    // console.log(`ID duplicado omitido: ${item.id} de ${batchName}`);
                 }
             });
-            console.log(`ℹ️ ${newItemsCount} nuevos items agregados desde ${batchName}. Total en mapa: ${allDataMap.size}`);
+            
+            console.log(`ℹ️ ${newItemsCount} nuevos items agregados desde ${batchName}. ${renamedCount} marcadores FIAB renombrados. Total en mapa: ${allDataMap.size}`);
         };
 
         addBatchToMap(mercados, 'mercados.csv');
@@ -508,11 +529,10 @@ export const unifyAllData = async (): Promise<Feria[]> => {
 
         const allData = Array.from(allDataMap.values());
 
-        // Asignar IDs únicos si alguno aún no lo tiene (aunque el Map debería manejar IDs)
-        // Esta parte podría ser redundante si todos los items procesados ya tienen IDs.
+        // Asignar IDs únicos si alguno aún no lo tiene
         return allData.map((item, index) => ({
             ...item,
-            id: item.id || `item_unified_${index + 1}` // Fallback ID if still missing
+            id: item.id || `item_unified_${index + 1}`
         }));
 
     } catch (error) {
@@ -536,5 +556,3 @@ export const filterByCategory = (points: Feria[], category: string): Feria[] => 
     }
     return points.filter(point => point.categoria === category);
 };
-
-// Distance calculation is handled by ../utils/distanceCalculator.ts
