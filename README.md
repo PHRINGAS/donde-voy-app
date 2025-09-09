@@ -1,149 +1,153 @@
-# Donde voy? 🗺️
+# Donde Voy? 🗺️
 
-Una aplicación web interactiva que te ayuda a descubrir mercados, ferias y espacios culturales cerca de tu ubicación en Buenos Aires.
+An interactive web application that helps you discover markets, fairs, and cultural spaces near your location in Buenos Aires.
 
-## ✨ Características Principales
+## ✨ Key Features
 
-### 🎯 Funcionalidades del Mapa
-- **10 puntos más cercanos**: Muestra automáticamente los 10 lugares más cercanos a tu ubicación
-- **Marcadores dinámicos**: Los marcadores se agrandan al pasar el mouse (efecto hover)
-- **Actualización en tiempo real**: Los marcadores se actualizan según los filtros seleccionados
-- **Efectos visuales suaves**: Transiciones fluidas y efectos hover consistentes
+### 🎯 Map Functionalities
+- **10 nearest points**: Automatically displays the 10 places closest to your location.
+- **Dynamic markers**: Markers enlarge on hover.
+- **Real-time updates**: Markers update according to the selected filters.
+- **Smooth visual effects**: Fluid transitions and consistent hover effects.
 
-### 🏷️ Sistema de Filtrado
-- **3 categorías principales**:
-  - 🛒 **Mercados**: Mercados municipales y centros de abastecimiento
-  - 🎪 **Ferias**: Ferias artesanales, de libros, antigüedades y más
-  - 🎭 **Cultura**: Teatros, museos, centros culturales, bares históricos
+### 🏷️ Filtering System
+- **3 main categories**:
+  - 🛒 **Markets**: Municipal markets and supply centers.
+  - 🎪 **Fairs**: Artisan, book, antique fairs, and more.
+  - 🎭 **Culture**: Theaters, museums, cultural centers, historical bars.
 
-### 📍 Geolocalización Inteligente
-- Detección automática de ubicación
-- Cálculo de distancias en tiempo real
-- Búsqueda de direcciones
-- Información detallada de cada punto
+### 📍 Smart Geolocation
+- Automatic location detection.
+- Real-time distance calculation.
+- Address search.
+- Detailed information for each point.
 
-### 🎨 Interfaz Moderna
-- Diseño responsivo y fluido
-- Transiciones suaves entre estados
-- Consistencia visual en todos los elementos
-- Interfaz intuitiva y fácil de usar
+### 🎨 Modern Interface
+- Responsive and fluid design.
+- Smooth transitions between states.
+- Visual consistency across all elements.
+- Intuitive and easy-to-use interface.
 
-## 🚀 Tecnologías Utilizadas
+## 🚀 Technologies Used
 
 - **Frontend**: React 18 + TypeScript
-- **Mapas**: Leaflet.js
-- **Estilos**: Tailwind CSS + shadcn/ui
-- **Estado**: React Context + Local Storage
-- **Geolocalización**: Web Geolocation API
-- **Datos**: CSV + JSON + Supabase (opcional)
+- **Maps**: Leaflet.js
+- **Styling**: Tailwind CSS + shadcn/ui
+- **State Management**: React Context + Local Storage
+- **Geolocation**: Web Geolocation API
+- **Data**: CSV + JSON + Supabase (optional)
 
-## 📊 Fuentes de Datos
+## 🚧 Project Status: Migration in Progress
 
-La aplicación integra y procesa datos de múltiples fuentes:
+"Donde Voy" is currently undergoing a migration to expand its scope. We are in the process of integrating a wider variety of locations, including **restaurants** and other interesting places recommended by **TikTok influencers**. This will allow you to discover not only cultural spots but also the trendiest places to eat and visit.
 
-1. **mercados.csv**: Mercados municipales de Buenos Aires
-2. **ferias.csv**: Ferias artesanales y culturales
-3. **espacios-culturales.json**: Teatros, museos, bares históricos
-4. **Datos existentes**: Ferias locales y GeoJSON
+## 📊 Data Sources
 
-## 🛠️ Instalación y Uso
+The application integrates and processes data from multiple sources:
 
-### Prerrequisitos
-- Node.js 18+ 
-- npm o yarn
+1.  **mercados.csv**: Municipal markets of Buenos Aires.
+2.  **ferias.csv**: Artisan and cultural fairs.
+3.  **espacios-culturales.json**: Theaters, museums, historical bars.
+4.  **Existing data**: Local fairs and GeoJSON.
 
-### Instalación
+## 🛠️ Installation and Usage
+
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+
+### Installation
 ```bash
-# Clonar el repositorio
+# Clone the repository
 git clone <repository-url>
-cd feria-finder-urbana-app
+cd donde-voy-app
 
-# Instalar dependencias
+# Install dependencies
 npm install
 
-# Iniciar en modo desarrollo
+# Start in development mode
 npm run dev
 ```
 
-### Scripts Disponibles
+### Available Scripts
 ```bash
-npm run dev          # Servidor de desarrollo
-npm run build        # Construir para producción
-npm run preview      # Vista previa de producción
+npm run dev          # Development server
+npm run build        # Build for production
+npm run preview      # Production preview
 npm run lint         # Linting
 ```
 
-## 🎯 Funcionalidades Específicas
+## 🎯 Specific Functionalities
 
-### Mapa Interactivo
-- **Zoom dinámico**: Los marcadores cambian de tamaño según el zoom
-- **Leyenda de colores**: Identificación visual por categorías
-- **Popups informativos**: Información detallada de cada lugar
-- **Centrado automático**: Se centra en tu ubicación
+### Interactive Map
+- **Dynamic zoom**: Markers change size with zoom level.
+- **Color legend**: Visual identification by categories.
+- **Informative popups**: Detailed information for each place.
+- **Automatic centering**: Centers on your location.
 
-### Filtros Avanzados
-- **Por categoría**: Mercados, Ferias, Cultura
-- **Por tipo**: Específico de cada categoría
-- **Por distancia**: Radio de búsqueda personalizable
-- **Por horarios**: Mañana, tarde, noche, todo el día
-- **Por servicios**: WiFi, estacionamiento, accesibilidad, etc.
+### Advanced Filters
+- **By category**: Markets, Fairs, Culture.
+- **By type**: Specific to each category.
+- **By distance**: Customizable search radius.
+- **By hours**: Morning, afternoon, night, all day.
+-- **By services**: WiFi, parking, accessibility, etc.
 
-### Gestión Personal
-- **Favoritos**: Guarda tus lugares preferidos
-- **Búsqueda**: Encuentra lugares por nombre o dirección
-- **Recordatorios**: Sistema de notificaciones (en desarrollo)
+### Personal Management
+- **Favorites**: Save your favorite places.
+- **Search**: Find places by name or address.
+- **Reminders**: Notification system (in development).
 
 ## 📱 Responsive Design
 
-La aplicación está optimizada para:
-- 📱 Móviles (320px+)
+The application is optimized for:
+- 📱 Mobiles (320px+)
 - 📱 Tablets (768px+)
 - 💻 Desktop (1024px+)
 
-## 🎨 Paleta de Colores
+## 🎨 Color Palette
 
-- **Mercados**: Azul (#4ECDC4)
-- **Ferias**: Naranja (#FF6B6B)
-- **Cultura**: Púrpura (#9B59B6)
-- **Usuario**: Azul marino (#007cbf)
+- **Markets**: Blue (#4ECDC4)
+- **Fairs**: Orange (#FF6B6B)
+- **Culture**: Purple (#9B59B6)
+- **User**: Navy Blue (#007cbf)
 
-## 🔧 Configuración Avanzada
+## 🔧 Advanced Configuration
 
-### Variables de Entorno
+### Environment Variables
 ```env
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_key
 ```
 
-### Personalización de Datos
-Los archivos de datos se encuentran en la raíz del proyecto:
-- `mercados.csv`: Formato CSV con columnas específicas
-- `ferias.csv`: Datos de ferias en formato CSV
-- `espacios-culturales.json`: Datos JSON de espacios culturales
+### Data Customization
+Data files are located in the project root:
+- `mercados.csv`: CSV format with specific columns.
+- `ferias.csv`: Fair data in CSV format.
+- `espacios-culturales.json`: JSON data for cultural spaces.
 
-## 🤝 Contribución
+## 🤝 Contribution
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+1.  Fork the project.
+2.  Create a branch for your feature (`git checkout -b feature/AmazingFeature`).
+3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4.  Push to the branch (`git push origin feature/AmazingFeature`).
+5.  Open a Pull Request.
 
-## 📄 Licencia
+## 📄 License
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+This project is under the MIT License. See the `LICENSE` file for more details.
 
-## 🙏 Agradecimientos
+## 🙏 Acknowledgements
 
-- Datos de mercados y ferias proporcionados por el Gobierno de la Ciudad de Buenos Aires
-- Iconos de Lucide React
-- Componentes UI de shadcn/ui
-- Mapas de OpenStreetMap
+- Market and fair data provided by the Government of the City of Buenos Aires.
+- Icons by Lucide React.
+- UI Components by shadcn/ui.
+- Maps by OpenStreetMap.
 
-## 📞 Contacto
+## 📞 Contact
 
-¿Tienes preguntas o sugerencias? ¡No dudes en contactarnos!
+Have questions or suggestions? Feel free to contact us!
 
 ---
 
-**Donde voy?** - Descubre Buenos Aires de una manera nueva 🗺️✨
+**Donde Voy?** - Discover Buenos Aires in a new way 🗺️✨
