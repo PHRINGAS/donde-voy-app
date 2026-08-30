@@ -23,3 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Datos de scraping (1.8+ GB, incluye cookies de sesion): nunca commitear
+scraper_tiktok/
+.env.*
+!.env.example
+*.tsbuildinfo
+.overpass-cache/
+dev.log

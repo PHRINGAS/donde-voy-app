@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Feria, SearchFilters, UserLocation } from '../types'; // Assuming Feria type already allows optional 'distancia'
+import { Feria, SearchFilters, UserLocation, CATEGORIAS_PRINCIPALES } from '../types';
 import { feriasData, getAllFerias } from '../data/feriasData';
 import { feriasService } from '../integrations/supabase/feriasService';
+import { getNearbyPlacesAsFerias } from '../integrations/supabase/placesService';
 import { calculateDistance } from '../utils/distanceCalculator';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { unifyAllData } from '../utils/dataProcessor';
@@ -32,56 +33,50 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Usar localStorage para persistir favoritos
   const [favorites, setFavorites] = useLocalStorage<string[]>('feriando-favorites', []);
 
-  // Cargar datos unificados al inicializar
+  // Cargar datos al inicializar: base masiva de lugares (agentes) + datasets locales
   useEffect(() => {
     const loadUnifiedData = async () => {
       try {
         setLoading(true);
+        const allDataMap = new Map<string, Feria>();
 
-        // Intentar cargar datos unificados primero
-        let allData: Feria[] = [];
+        const addBatch = (batch: Feria[], nombre: string) => {
+          batch.forEach(item => {
+            if (!allDataMap.has(item.id)) allDataMap.set(item.id, item);
+          });
+          console.log(`✅ ${batch.length} puntos desde ${nombre} (total: ${allDataMap.size})`);
+        };
 
+        // 1) Base masiva `places` cargada por los agentes (carga por cercanía con tope)
+        const places = await getNearbyPlacesAsFerias();
+        if (places.length > 0) addBatch(places, 'places (Supabase)');
+
+        // 2) Datasets locales unificados (mercados, ferias, cultura)
         try {
-          console.log('🔄 Cargando datos unificados (mercados, ferias, cultura)...');
-          allData = await unifyAllData();
+          const localData = await unifyAllData();
+          if (localData.length > 0) addBatch(localData, 'datasets locales');
+        } catch (localError) {
+          console.error('Error datos locales:', localError);
 
-          if (allData.length > 0) {
-            console.log(`✅ Se cargaron ${allData.length} puntos desde datos unificados`);
-          } else {
-            throw new Error('No se pudieron cargar datos unificados');
-          }
-        } catch (unifiedError) {
-          console.log('⚠️  No se pudieron cargar datos unificados, intentando Supabase...');
-          console.error('Error datos unificados:', unifiedError);
-
-          // Fallback a Supabase
+          // Fallback a Supabase (tabla vieja de ferias)
           try {
-            console.log('🔄 Intentando cargar ferias desde Supabase...');
-            allData = await feriasService.getAllFerias();
-
-            if (allData.length > 0) {
-              console.log(`✅ Se cargaron ${allData.length} ferias desde Supabase`);
-            } else {
-              throw new Error('No hay datos en Supabase');
-            }
+            const legacy = await feriasService.getAllFerias();
+            if (legacy.length > 0) addBatch(legacy, 'ferias (Supabase legacy)');
           } catch (supabaseError) {
-            console.log('⚠️  No se pudieron cargar datos desde Supabase, usando datos locales...');
-            console.error('Error Supabase:', supabaseError);
-
-            // Fallback a datos locales
-            allData = await getAllFerias();
-            console.log(`✅ Se cargaron ${allData.length} ferias desde datos locales`);
+            console.error('Error Supabase legacy:', supabaseError);
+            addBatch(await getAllFerias(), 'datos locales fallback');
           }
         }
 
+        const allData = Array.from(allDataMap.values());
+
+        if (allData.length === 0) throw new Error('Sin fuentes de datos disponibles');
         setRawFerias(allData);
-        // Initially, set feriasWithDistances to rawFerias; distances will be added if location is available
         setFeriasWithDistances(allData);
-        setFilteredFerias(allData); // Initial filtered list
+        setFilteredFerias(allData);
 
       } catch (error) {
         console.error('❌ Error cargando datos:', error);
-        // Fallback final a datos de muestra (ensure this data is in the correct shape)
         const fallbackData = feriasData.map(f => ({ ...f, distancia: undefined }));
         setRawFerias(fallbackData);
         setFeriasWithDistances(fallbackData);
@@ -117,11 +112,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     let filtered = [...feriasWithDistances]; // Filter from ferias that may have distances
 
-    // Filtro por categoría (nuevo)
+    // Filtro por categoría
+    // Las categorías principales filtran por el campo `categoria`;
+    // cualquier otro valor (Orgánico, Vegano, ...) se busca como
+    // especialidad/etiqueta/producto para que coincida con el contador.
     if (searchFilters.categoria && searchFilters.categoria !== 'Todos') {
-      filtered = filtered.filter(feria =>
-        feria.categoria === searchFilters.categoria
-      );
+      const categoria = searchFilters.categoria;
+      const isCore = CATEGORIAS_PRINCIPALES.includes(categoria);
+
+      filtered = filtered.filter(feria => {
+        if (isCore) {
+          return feria.categoria === categoria;
+        }
+        const needle = categoria.toLowerCase();
+        return (
+          feria.categoria === categoria ||
+          feria.especialidad.some(e => e.toLowerCase().includes(needle)) ||
+          feria.etiquetas.some(t => t.toLowerCase().includes(needle)) ||
+          feria.productos.some(p => p.toLowerCase().includes(needle))
+        );
+      });
     }
 
     // Filtro por tipo de feria

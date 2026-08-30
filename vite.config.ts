@@ -10,6 +10,16 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
   ].filter(Boolean),
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          leaflet: ['leaflet', 'leaflet.markercluster'],
+          supabase: ['@supabase/supabase-js'],
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

@@ -40,22 +40,30 @@ const FeriaCard: React.FC<FeriaCardProps> = ({ feria, onViewDetails }) => {
 
   // Función para obtener el color del borde según la categoría
   const getBorderColor = (categoria: string) => {
-    const colors = {
+    const colors: Record<string, string> = {
       'Mercados': 'border-l-blue-500',
       'Ferias': 'border-l-orange-500',
-      'Cultura': 'border-l-purple-500'
+      'Cultura': 'border-l-purple-500',
+      'Gastronomía': 'border-l-green-500',
+      'Bares': 'border-l-purple-700',
+      'Actividades': 'border-l-teal-600',
+      'Noche': 'border-l-indigo-500'
     };
-    return colors[categoria as keyof typeof colors] || 'border-l-gray-500';
+    return colors[categoria] || 'border-l-gray-500';
   };
 
   // Función para obtener el icono de categoría
   const getCategoryIcon = (categoria: string) => {
-    const icons = {
+    const icons: Record<string, string> = {
       'Mercados': '🛒',
       'Ferias': '🎪',
-      'Cultura': '🎭'
+      'Cultura': '🎭',
+      'Gastronomía': '🍽️',
+      'Bares': '🍺',
+      'Actividades': '🎯',
+      'Noche': '🌙'
     };
-    return icons[categoria as keyof typeof icons] || '📍';
+    return icons[categoria] || '📍';
   };
 
   return (

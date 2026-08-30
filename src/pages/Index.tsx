@@ -14,13 +14,16 @@ import FloatingControls from '../components/FloatingControls';
 import { AppProvider } from '../contexts/AppContext';
 import { toast } from "sonner";
 
+const PAGE_SIZE = 20;
+
 const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'map' | 'list' | 'favorites' | 'reminders'>('map');
   const [showSearch, setShowSearch] = useState(false);
   const [selectedFeria, setSelectedFeria] = useState<Feria | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  const { location, error, loading } = useGeolocation();
-  const { setUserLocation, filteredFerias, favorites } = useApp();
+  const { location, error, loading: geoLoading } = useGeolocation();
+  const { setUserLocation, filteredFerias, favorites, loading: dataLoading } = useApp();
 
   useEffect(() => {
     if (location) {
@@ -37,6 +40,11 @@ const AppContent: React.FC = () => {
       toast.error("No se pudo obtener la ubicación");
     }
   };
+
+  // Carga progresiva: resetear página al cambiar filtros/categoría o pestaña
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [filteredFerias.length, activeTab]);
 
   // Función para invalidar el tamaño del mapa cuando se activa la pestaña
   useEffect(() => {
@@ -83,14 +91,16 @@ const AppContent: React.FC = () => {
               <CategoryFilter />
             </div>
 
-            {loading && (
+            {geoLoading && (
               <div className="text-center py-8">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-                <p className="mt-2 text-gray-600">Detectando ubicación...</p>
+                <p className="mt-2 text-gray-600">
+                  {dataLoading ? 'Cargando lugares...' : 'Detectando ubicación...'}
+                </p>
               </div>
             )}
 
-            {filteredFerias.length === 0 && !loading ? (
+            {filteredFerias.length === 0 && !geoLoading ? (
               <div className="empty-state">
                 <div className="empty-state-icon">🤔</div>
                 <h3 className="empty-state-title">
@@ -106,16 +116,24 @@ const AppContent: React.FC = () => {
                   <h2 className="text-base font-semibold text-gray-800">
                     Lugares disponibles ({filteredFerias.length})
                   </h2>
-                  {/* ELIMINA "UBICACIÓN ACTIVA" */}
                 </div>
 
-                {filteredFerias.map(feria => (
+                {filteredFerias.slice(0, visibleCount).map(feria => (
                   <FeriaCard
                     key={feria.id}
                     feria={feria}
                     onViewDetails={setSelectedFeria}
                   />
                 ))}
+
+                {visibleCount < filteredFerias.length && (
+                  <button
+                    onClick={() => setVisibleCount(c => Math.min(c + PAGE_SIZE, filteredFerias.length))}
+                    className="w-full py-3 rounded-xl border-2 border-orange-200 text-orange-700 font-semibold hover:bg-orange-50 transition-colors"
+                  >
+                    Ver más ({filteredFerias.length - visibleCount} restantes)
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -151,6 +169,10 @@ const AppContent: React.FC = () => {
         feria={selectedFeria}
         isOpen={!!selectedFeria}
         onClose={() => setSelectedFeria(null)}
+        onReminder={() => {
+          setSelectedFeria(null);
+          setActiveTab('reminders');
+        }}
       />
     </div>
   );

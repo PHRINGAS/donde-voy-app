@@ -1,0 +1,106 @@
+# Stack local completo: Postgres+PostGIS, migraciones, PostgREST (API
+# compatible con supabase-js), agentes bajo demanda y scheduler semanal.
+#
+# Uso:
+#   docker compose up -d --build          # levanta todo + 1ra ingesta automática
+#   docker compose run --rm agents ingest # comando puntual de agentes
+#   docker compose logs -f scheduler      # ver el cron
+#
+# Para apuntar los agentes a SUPABASE REAL en vez del stack local:
+#   SUPABASE_URL=https://xxx.supabase.co SUPABASE_SERVICE_ROLE_KEY=eyJ... \
+#     docker compose run --rm -e SUPABASE_URL -e SUPABASE_SERVICE_ROLE_KEY agents all
+
+services:
+  db:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: dondevoy-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dondevoy
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dondevoy"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: dondevoy-migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: postgres
+    volumes:
+      - ./supabase/migrations:/migrations:ro
+      - ./docker/migrate.sh:/migrate.sh:ro
+    entrypoint: ["/bin/sh", "/migrate.sh"]
+    restart: "no"
+
+  postgrest:
+    image: postgrest/postgrest:v12.2.0
+    container_name: dondevoy-api
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      # HS256 exige clave >= 32 bytes (RFC 7518); con menos, hs-jose rechaza
+      # el token como firma invalida.
+      PGRST_DB_URI: postgres://authenticator:postgres@db:5432/dondevoy
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: service_role
+      PGRST_JWT_SECRET: dondevoy-local-dev-jwt-secret-v1-32b
+    ports:
+      - "3000:3000"
+
+  agents:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dondevoy-agents
+    profiles: ["tools"]
+    entrypoint: ["npx", "tsx", "agents/src/runner.ts"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgrest:
+        condition: service_started
+    environment:
+      SUPABASE_URL: http://postgrest:3000
+      SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoiZG9uZGV2b3ktbG9jYWwiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MTkwMDAwMDAwMH0.3UW1tco0QE2fXpmap_uZHO0SNhaO-jgT2Knt99sd2BE
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dondevoy-scheduler
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgrest:
+        condition: service_started
+    environment:
+      SUPABASE_URL: http://postgrest:3000
+      SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoiZG9uZGV2b3ktbG9jYWwiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MTkwMDAwMDAwMH0.3UW1tco0QE2fXpmap_uZHO0SNhaO-jgT2Knt99sd2BE
+      CRON_SCHEDULE: "0 9 * * 1"
+      # false mientras dure el cooldown de Overpass; poner true para
+      # poblar todo inmediatamente al levantar el stack.
+      RUN_ON_START: "false"
+      AGENT_COMMAND: "all"
+      VIDEO_PLACES_PER_RUN: "150"
+      WEB_MAX_QUERIES: "60"
+      WEB_MAX_PAGES: "250"
+    entrypoint: ["/bin/sh", "/app/docker/scheduler/entrypoint.sh"]
+    volumes:
+      - ./docker/scheduler/entrypoint.sh:/app/docker/scheduler/entrypoint.sh:ro
+
+volumes:
+  pgdata:
+

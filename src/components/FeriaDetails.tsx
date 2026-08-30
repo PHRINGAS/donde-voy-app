@@ -1,7 +1,8 @@
-import React from 'react';
-import { X, MapPin, Clock, Calendar, Heart, Bell, Tag, Star, Map, Info } from 'lucide-react';
-import { Feria } from '../types';
+import React, { useEffect, useCallback, useState } from 'react';
+import { X, MapPin, Clock, Calendar, Heart, Bell, Tag, Star, Map, Info, PlayCircle } from 'lucide-react';
+import { Feria, PlaceVideo } from '../types';
 import { useApp } from '../contexts/AppContext';
+import { supabase } from '../integrations/supabase/client';
 import { formatDistance } from '../utils/distanceCalculator';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,10 +12,47 @@ interface FeriaDetailsProps {
   feria: Feria | null;
   isOpen: boolean;
   onClose: () => void;
+  onReminder?: () => void;
 }
 
-const FeriaDetails: React.FC<FeriaDetailsProps> = ({ feria, isOpen, onClose }) => {
+const FeriaDetails: React.FC<FeriaDetailsProps> = ({ feria, isOpen, onClose, onReminder }) => {
   const { toggleFavorite, isFavorite } = useApp();
+  const [videos, setVideos] = useState<PlaceVideo[]>([]);
+
+  useEffect(() => {
+    if (!isOpen || !feria) {
+      setVideos([]);
+      return;
+    }
+    let cancel = false;
+    supabase
+      .from('place_videos')
+      .select('*')
+      .eq('place_id', feria.id)
+      .in('estado', ['approved', 'auto_matched'])
+      .order('match_score', { ascending: false })
+      .limit(6)
+      .then(({ data }) => {
+        if (!cancel) setVideos((data as PlaceVideo[]) ?? []);
+      });
+    return () => {
+      cancel = true;
+    };
+  }, [isOpen, feria]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, handleKeyDown]);
 
   if (!isOpen || !feria) return null;
 
@@ -43,14 +81,24 @@ const FeriaDetails: React.FC<FeriaDetailsProps> = ({ feria, isOpen, onClose }) =
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end md:items-center md:justify-center">
-      <div className="bg-white w-full max-w-lg max-h-[90vh] md:max-h-[80vh] rounded-t-2xl md:rounded-2xl overflow-hidden">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 z-[1200] flex items-end md:items-center md:justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-label={feria.nombre}
+      onClick={onClose}
+    >
+      <div
+        className="bg-white w-full max-w-lg max-h-[90vh] md:max-h-[80vh] rounded-t-2xl md:rounded-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-xl font-bold">{feria.nombre}</h2>
             <button
               onClick={onClose}
+              aria-label="Cerrar detalles"
               className="p-2 hover:bg-orange-400 rounded-full transition-colors"
             >
               <X size={20} />
@@ -92,6 +140,46 @@ const FeriaDetails: React.FC<FeriaDetailsProps> = ({ feria, isOpen, onClose }) =
               </Badge>
             )}
           </div>
+
+          {/* Videos */}
+          {videos.length > 0 && (
+            <div className="mb-4">
+              <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                <PlayCircle size={18} className="text-red-500" />
+                Videos ({videos.length})
+              </h3>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {videos.map((video) => (
+                  <a
+                    key={video.id}
+                    href={video.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 w-36 group"
+                  >
+                    <div className="relative rounded-xl overflow-hidden shadow-sm border border-gray-100 aspect-video bg-gray-100">
+                      {video.thumbnail_url ? (
+                        <img
+                          src={video.thumbnail_url}
+                          alt={video.titulo ?? 'Video'}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-2xl">🎬</div>
+                      )}
+                      <span className="absolute bottom-1 right-1 text-[10px] px-1.5 py-0.5 rounded bg-black/70 text-white uppercase font-bold">
+                        {video.platform}
+                      </span>
+                    </div>
+                    {video.canal && (
+                      <p className="text-xs text-gray-500 mt-1 truncate">@{video.canal}</p>
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Descripción */}
           {feria.descripcion && (
@@ -271,6 +359,7 @@ const FeriaDetails: React.FC<FeriaDetailsProps> = ({ feria, isOpen, onClose }) =
               {isLiked ? 'Guardado' : 'Guardar'}
             </Button>
             <Button
+              onClick={() => onReminder?.()}
               variant="outline"
               className="flex-1 border-orange-200 text-orange-600 hover:bg-orange-50"
             >

@@ -15,7 +15,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   return (
     <nav className="bottom-navigation">
       {/* DISTRIBUCIÓN EQUIDISTANTE PERFECTA */}
-      <div className="flex justify-around items-center h-full w-full max-w-500px mx-auto px-4">
+      <div className="flex justify-around items-center h-full w-full max-w-[500px] mx-auto px-4">
         <button
           onClick={() => onTabChange('map')}
           className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all flex-1 max-w-20 ${

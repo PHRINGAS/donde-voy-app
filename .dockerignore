@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-agents-tmp
+scraper_tiktok
+.git
+.github
+.vscode
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+bun.lockb
+public
+src
+scripts
+index.md

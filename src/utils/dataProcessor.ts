@@ -1,6 +1,6 @@
 import { Feria, ETIQUETAS_SISTEMA } from '../types';
 
-interface GeoJSONFeature {
+export interface GeoJSONFeature {
     type: string;
     properties: {
         id: number;
@@ -24,39 +24,34 @@ interface GeoJSONFeature {
     };
 }
 
-interface GeoJSONData {
+export interface GeoJSONData {
     type: string;
     name: string;
-    crs: any;
+    crs: unknown;
     features: GeoJSONFeature[];
 }
 
 // Tipos para los diferentes datos
 interface MercadoData {
-    NOMBRE: string;
-    NOMBRE_MAP: string;
-    UBICACION: string;
-    BARRIO: string;
-    LON: string;
-    LAT: string;
+    NOMBRE?: string;
+    UBICACION?: string;
+    BARRIO?: string;
+    LON?: string;
+    LAT?: string;
+    COMUNA?: string;
 }
 
 interface FeriaCSVData {
-    LAT: string;
-    LNG: string;
-    ID: string;
-    OBJETO: string;
-    TIPO: string;
-    NOMBRE: string;
-    DIAS: string;
-    OBSERVACIO: string;
-    DIRECCION: string;
-    CALLE: string;
-    CRUCE: string;
-    DIREC_NORM: string;
-    DIREC_ARCG: string;
-    BARRIO: string;
-    COMUNA: string;
+    LAT?: string;
+    LNG?: string;
+    ID?: string;
+    TIPO?: string;
+    NOMBRE?: string;
+    DIAS?: string;
+    OBSERVACIO?: string;
+    DIRECCION?: string;
+    BARRIO?: string;
+    COMUNA?: string;
 }
 
 interface EspacioCulturalData {
@@ -80,6 +75,81 @@ interface EspacioCulturalData {
     telefono: string;
 }
 
+// ID estable a partir del nombre (los IDs por índice cambian si el dataset
+// cambia de orden y rompen los favoritos guardados en localStorage)
+const slugify = (input: string): string =>
+    input
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 80);
+
+/**
+ * Parser CSV/delimitado que soporta campos entre comillas y separadores
+ * dentro de comillas ("algo; mas" cuenta como una sola celda).
+ */
+const parseDelimited = (csvText: string, delimiter = ';'): Record<string, string>[] => {
+    const rows: string[][] = [];
+    let row: string[] = [];
+    let field = '';
+    let inQuotes = false;
+
+    const text = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+
+        if (inQuotes) {
+            if (char === '"') {
+                if (text[i + 1] === '"') {
+                    field += '"';
+                    i++;
+                } else {
+                    inQuotes = false;
+                }
+            } else {
+                field += char;
+            }
+            continue;
+        }
+
+        if (char === '"') {
+            inQuotes = true;
+        } else if (char === delimiter) {
+            row.push(field);
+            field = '';
+        } else if (char === '\n') {
+            row.push(field);
+            rows.push(row);
+            row = [];
+            field = '';
+        } else {
+            field += char;
+        }
+    }
+
+    // Última fila sin newline final
+    if (field.length > 0 || row.length > 0) {
+        row.push(field);
+        rows.push(row);
+    }
+
+    const nonEmptyRows = rows.filter(r => r.some(cell => cell.trim().length > 0));
+    if (nonEmptyRows.length < 2) return [];
+
+    const headers = nonEmptyRows[0].map(h => h.trim());
+
+    return nonEmptyRows.slice(1).map(cells => {
+        const record: Record<string, string> = {};
+        headers.forEach((header, i) => {
+            record[header] = (cells[i] ?? '').trim();
+        });
+        return record;
+    });
+};
+
 // Función para renombrar marcadores FIAB
 const renameFIABMarkers = (nombre: string): string => {
     // Buscar patrón FIAB seguido de número
@@ -87,13 +157,13 @@ const renameFIABMarkers = (nombre: string): string => {
     if (fiabMatch) {
         return `Feria ${fiabMatch[1]}`;
     }
-    
+
     // Buscar patrón FIAB con espacios o caracteres adicionales
     const fiabComplexMatch = nombre.match(/^FIAB[\s\-_]*(\d+)/i);
     if (fiabComplexMatch) {
         return `Feria ${fiabComplexMatch[1]}`;
     }
-    
+
     return nombre; // Retornar nombre original si no coincide con el patrón
 };
 
@@ -184,12 +254,12 @@ const determineTipo = (productos: string[]): string => {
 };
 
 // Función para generar etiquetas especializadas
+// NOTA: heurísticas sobre texto libre de observaciones/productos.
 const generateEspecialidades = (productos: string[], observaciones: string | null): string[] => {
     const especialidades: string[] = [];
     const productosStr = productos.join(' ').toLowerCase();
     const observacionesStr = (observaciones || '').toLowerCase();
 
-    // Detectar especialidades basadas en productos
     if (productosStr.includes('orgánico') || productosStr.includes('organico')) {
         especialidades.push('Orgánico');
     }
@@ -202,7 +272,7 @@ const generateEspecialidades = (productos: string[], observaciones: string | nul
         especialidades.push('Tradicional');
     }
 
-    if (productosStr.includes('fresco') || productosStr.includes('fresco')) {
+    if (productosStr.includes('fresco')) {
         especialidades.push('Fresco');
     }
 
@@ -215,16 +285,15 @@ const generateEspecialidades = (productos: string[], observaciones: string | nul
         especialidades.push('Moderno');
     }
 
-    return especialidades;
+    return [...new Set(especialidades)];
 };
 
-// Función para generar servicios disponibles
+// Función para generar servicios disponibles (heurística sobre texto libre)
 const generateServicios = (observaciones: string | null, nombre: string): string[] => {
     const servicios: string[] = [];
     const observacionesStr = (observaciones || '').toLowerCase();
     const nombreStr = nombre.toLowerCase();
 
-    // Detectar servicios basados en observaciones y nombre
     if (observacionesStr.includes('plaza') || observacionesStr.includes('parque')) {
         servicios.push('Área de Descanso');
         servicios.push('Estacionamiento');
@@ -312,7 +381,7 @@ export const processGeoJSONData = (geoJSONData: GeoJSONData): Feria[] => {
             frecuencia: 'semanal',
             especialidad: especialidades,
             servicios: servicios
-        };
+        } satisfies Feria;
     });
 };
 
@@ -330,26 +399,20 @@ export const loadFeriasFromGeoJSON = async (): Promise<Feria[]> => {
 
 // Función para procesar datos de mercados CSV
 export const processMercadosData = (csvData: string): Feria[] => {
-    const lines = csvData.split('\n').filter(line => line.trim());
-    const headers = lines[0].split(';');
-    const data = lines.slice(1);
+    const records = parseDelimited(csvData);
 
-    return data.map((line, index) => {
-        const values = line.split(';');
-        const mercado: any = {};
-        headers.forEach((header, i) => {
-            mercado[header] = values[i];
-        });
-
+    return records.map((mercado: MercadoData, index) => {
         // Aplicar renombrado FIAB también a mercados si es necesario
         const nombreProcesado = renameFIABMarkers(mercado.NOMBRE || 'Mercado');
 
         return {
-            id: `mercado_${index + 1}`,
+            id: mercado.NOMBRE
+                ? `mercado_${slugify(`${mercado.NOMBRE}-${mercado.BARRIO || ''}`)}`
+                : `mercado_row_${index + 1}`,
             nombre: nombreProcesado,
             direccion: mercado.UBICACION || '',
-            lat: parseFloat(mercado.LAT?.replace(',', '.')) || 0,
-            lng: parseFloat(mercado.LON?.replace(',', '.')) || 0,
+            lat: parseFloat(mercado.LAT?.replace(',', '.') ?? '') || 0,
+            lng: parseFloat(mercado.LON?.replace(',', '.') ?? '') || 0,
             tipo: 'Mercado',
             categoria: 'Mercados',
             diasFuncionamiento: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
@@ -358,7 +421,7 @@ export const processMercadosData = (csvData: string): Feria[] => {
                 cierre: '18:00'
             },
             productos: ['Frutas y Verduras', 'Carnes', 'Fiambres y Lácteos', 'Pescadería', 'Panadería'],
-            descripcion: `Mercado municipal en ${mercado.BARRIO}`,
+            descripcion: `Mercado municipal en ${mercado.BARRIO || 'Buenos Aires'}`,
             barrio: mercado.BARRIO || '',
             comuna: mercado.COMUNA || '',
             etiquetas: ['Mercado', 'Municipal', 'Alimentos', 'Fresco'],
@@ -367,23 +430,15 @@ export const processMercadosData = (csvData: string): Feria[] => {
             especialidad: ['Local', 'Fresco', 'Tradicional'],
             servicios: ['Estacionamiento', 'Accesibilidad'],
             distancia: undefined
-        };
+        } satisfies Feria;
     });
 };
 
 // Función para procesar datos de ferias CSV
 export const processFeriasCSVData = (csvData: string): Feria[] => {
-    const lines = csvData.split('\n').filter(line => line.trim());
-    const headers = lines[0].split(';');
-    const data = lines.slice(1);
+    const records = parseDelimited(csvData);
 
-    return data.map((line, index) => {
-        const values = line.split(';');
-        const feria: any = {};
-        headers.forEach((header, i) => {
-            feria[header] = values[i];
-        });
-
+    return records.map((feria: FeriaCSVData, index) => {
         // Mapear tipos de ferias a categorías coherentes
         const tipoMapping: { [key: string]: string } = {
             'MANUALIDADES Y ANTIGÜEDADES': 'Artesanías',
@@ -393,7 +448,7 @@ export const processFeriasCSVData = (csvData: string): Feria[] => {
             'FILATELIA Y NUMISMATICA': 'Coleccionismo'
         };
 
-        const tipo = tipoMapping[feria.TIPO] || 'Feria';
+        const tipo = tipoMapping[feria.TIPO ?? ''] || 'Feria';
 
         // Procesar días de funcionamiento
         const diasRaw = feria.DIAS || '';
@@ -410,11 +465,13 @@ export const processFeriasCSVData = (csvData: string): Feria[] => {
         const nombreProcesado = renameFIABMarkers(feria.NOMBRE || 'Feria');
 
         return {
-            id: `feria_${feria.ID || index + 1}`,
+            id: feria.ID
+                ? `feria_${feria.ID}`
+                : `feria_${slugify(`${nombreProcesado}-${feria.BARRIO || ''}`) || index + 1}`,
             nombre: nombreProcesado,
             direccion: feria.DIRECCION || '',
-            lat: parseFloat(feria.LAT) || 0,
-            lng: parseFloat(feria.LNG) || 0,
+            lat: parseFloat(feria.LAT ?? '') || 0,
+            lng: parseFloat(feria.LNG ?? '') || 0,
             tipo: tipo,
             categoria: 'Ferias',
             diasFuncionamiento,
@@ -434,7 +491,7 @@ export const processFeriasCSVData = (csvData: string): Feria[] => {
             especialidad: ['Tradicional', 'Local'],
             servicios: ['Accesibilidad'],
             distancia: undefined
-        };
+        } satisfies Feria;
     });
 };
 
@@ -465,7 +522,7 @@ export const processEspaciosCulturalesData = (jsonData: EspacioCulturalData[]): 
             especialidad: ['Cultural', 'Histórico'],
             servicios: espacio.servicios,
             distancia: undefined
-        };
+        } satisfies Feria;
     });
 };
 
@@ -484,42 +541,27 @@ export const unifyAllData = async (): Promise<Feria[]> => {
 
         // Cargar datos de espacios culturales
         const espaciosResponse = await fetch('/espacios-culturales.json');
-        const espaciosData = await espaciosResponse.json();
+        const espaciosData: EspacioCulturalData[] = await espaciosResponse.json();
         const espacios = processEspaciosCulturalesData(espaciosData);
 
         // Cargar datos de ferias GeoJSON
         console.log('🔄 Cargando datos desde ferias_geo.json...');
         const feriasGeoJson = await loadFeriasFromGeoJSON();
-        if (feriasGeoJson.length > 0) {
-            console.log(`✅ Se cargaron ${feriasGeoJson.length} puntos desde ferias_geo.json`);
-        } else {
-            console.log('⚠️ No se encontraron datos en ferias_geo.json o hubo un error en su carga/procesamiento.');
-        }
 
         // Unificar todos los datos usando un Map para deduplicar por ID
         const allDataMap = new Map<string, Feria>();
 
         const addBatchToMap = (batch: Feria[], batchName: string) => {
             let newItemsCount = 0;
-            let renamedCount = 0;
-            
+
             batch.forEach(item => {
-                if (!item.id) {
-                    console.warn(`Item sin ID en ${batchName}, se omitirá o se le asignará uno genérico si es necesario más adelante.`);
-                }
-                
-                // Verificar si se aplicó renombrado FIAB
-                if (item.nombre.startsWith('Feria ') && !item.nombre.includes('FIAB')) {
-                    renamedCount++;
-                }
-                
                 if (!allDataMap.has(item.id)) {
                     allDataMap.set(item.id, item);
                     newItemsCount++;
                 }
             });
-            
-            console.log(`ℹ️ ${newItemsCount} nuevos items agregados desde ${batchName}. ${renamedCount} marcadores FIAB renombrados. Total en mapa: ${allDataMap.size}`);
+
+            console.log(`ℹ️ ${newItemsCount} nuevos items agregados desde ${batchName}. Total en mapa: ${allDataMap.size}`);
         };
 
         addBatchToMap(mercados, 'mercados.csv');
@@ -527,32 +569,17 @@ export const unifyAllData = async (): Promise<Feria[]> => {
         addBatchToMap(espacios, 'espacios-culturales.json');
         addBatchToMap(feriasGeoJson, 'ferias_geo.json');
 
-        const allData = Array.from(allDataMap.values());
-
-        // Asignar IDs únicos si alguno aún no lo tiene
-        return allData.map((item, index) => ({
-            ...item,
-            id: item.id || `item_unified_${index + 1}`
-        }));
-
+        return Array.from(allDataMap.values());
     } catch (error) {
         console.error('Error al unificar todos los datos:', error);
         return [];
     }
 };
 
-// Función para obtener los 10 puntos más cercanos
-export const getClosestPoints = (points: Feria[], userLat: number, userLng: number, count: number = 10): Feria[] => {
+// Función para obtener los puntos más cercanos
+export const getClosestPoints = (points: Feria[], _userLat: number, _userLng: number, count: number = 10): Feria[] => {
     return points
         .filter(point => point.distancia !== undefined)
-        .sort((a, b) => (a.distancia || 0) - (b.distancia || 0))
+        .sort((a, b) => (a.distancia || Infinity) - (b.distancia || Infinity))
         .slice(0, count);
-};
-
-// Función para filtrar por categoría
-export const filterByCategory = (points: Feria[], category: string): Feria[] => {
-    if (!category || category === 'Todos') {
-        return points;
-    }
-    return points.filter(point => point.categoria === category);
 };

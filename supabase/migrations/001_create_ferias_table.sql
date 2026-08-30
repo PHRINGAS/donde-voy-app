@@ -18,11 +18,6 @@ CREATE TABLE IF NOT EXISTS public.ferias (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create index for location-based queries
-CREATE INDEX IF NOT EXISTS idx_ferias_location ON public.ferias USING GIST (
-    ll_to_earth(lat, lng)
-);
-
 -- Create index for search
 CREATE INDEX IF NOT EXISTS idx_ferias_search ON public.ferias USING GIN (
     to_tsvector('spanish', nombre || ' ' || direccion || ' ' || COALESCE(descripcion, ''))
@@ -35,9 +30,19 @@ CREATE INDEX IF NOT EXISTS idx_ferias_dias ON public.ferias USING GIN(dias_funci
 -- Enable Row Level Security
 ALTER TABLE public.ferias ENABLE ROW LEVEL SECURITY;
 
--- Create policy to allow public read access
-CREATE POLICY "Allow public read access" ON public.ferias
-    FOR SELECT USING (true);
+-- Create policy to allow public read access (idempotente)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE schemaname = 'public' AND tablename = 'ferias'
+          AND policyname = 'Allow public read access'
+    ) THEN
+        CREATE POLICY "Allow public read access" ON public.ferias
+            FOR SELECT USING (true);
+    END IF;
+END
+$$;
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -49,7 +54,8 @@ END;
 $$ language 'plpgsql';
 
 -- Create trigger to automatically update updated_at
-CREATE TRIGGER update_ferias_updated_at 
-    BEFORE UPDATE ON public.ferias 
-    FOR EACH ROW 
-    EXECUTE FUNCTION update_updated_at_column(); 
+DROP TRIGGER IF EXISTS update_ferias_updated_at ON public.ferias;
+CREATE TRIGGER update_ferias_updated_at
+    BEFORE UPDATE ON public.ferias
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();

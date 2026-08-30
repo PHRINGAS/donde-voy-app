@@ -58,6 +58,32 @@ export interface UserLocation {
   accuracy?: number;
 }
 
+export interface PlaceVideo {
+  id: string;
+  place_id: string;
+  platform: 'youtube' | 'tiktok' | 'instagram';
+  video_id: string;
+  titulo?: string | null;
+  canal?: string | null;
+  url: string;
+  thumbnail_url?: string | null;
+  publicado_en?: string | null;
+  match_score: number;
+  estado: 'auto_matched' | 'pending_review' | 'approved' | 'rejected';
+}
+
+// Categorías que filtran por el campo `categoria`; el resto (Orgánico, Vegano...)
+// se busca como especialidad/etiqueta/producto.
+export const CATEGORIAS_PRINCIPALES = [
+  'Mercados',
+  'Ferias',
+  'Cultura',
+  'Gastronomía',
+  'Bares',
+  'Actividades',
+  'Noche',
+];
+
 export interface EtiquetasSistema {
   tipos: string[];
   productos: string[];

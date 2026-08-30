@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -10,7 +10,7 @@ import { Button } from './ui/button';
 import { Navigation, X } from 'lucide-react';
 
 // Fix para los iconos de Leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
@@ -24,6 +24,10 @@ const MapView: React.FC = () => {
   const markersCluster = useRef<L.MarkerClusterGroup | null>(null);
   const [isUserMovingMap, setIsUserMovingMap] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<Feria | null>(null);
+
+  // Marca movimientos programáticos (setView/fitBounds) para que los
+  // handlers movestart/moveend no los confundan con interacción del usuario.
+  const programmaticMoveRef = useRef(false);
 
   const { filteredFerias, userLocation, favorites, toggleFavorite, isFavorite } = useApp();
 
@@ -48,21 +52,20 @@ const MapView: React.FC = () => {
   // Colores para diferentes categorías - SOLO MODO CLARO
   const getMarkerColor = (categoria: string, tipo: string): string => {
     const categoryColors: { [key: string]: string } = {
-      'Mercados': '#FF5722',    // Naranja vibrante
-      'Ferias': '#E64A19',      // Naranja oscuro
-      'Cultura': '#FF9800'      // Naranja medio
+      'Mercados': '#FF5722',
+      'Ferias': '#E64A19',
+      'Cultura': '#FF9800',
+      'Gastronomía': '#43A047',
+      'Bares': '#7B1FA2',
+      'Actividades': '#00897B',
+      'Noche': '#5C6BC0'
     };
 
     const typeColors: { [key: string]: string } = {
       'Mercado': '#FF5722',
       'Artesanías': '#E64A19',
       'Libros': '#FF9800',
-      'Antigüedades': '#FFC107',
-      'Teatro': '#FF5722',
-      'Museo': '#E64A19',
-      'Centro Cultural': '#FF9800',
-      'Bar': '#FF5722',
-      'Café': '#E64A19'
+      'Antigüedades': '#FFC107'
     };
 
     return typeColors[tipo] || categoryColors[categoria] || '#FF5722';
@@ -73,7 +76,11 @@ const MapView: React.FC = () => {
     const iconMap: { [key: string]: string } = {
       'Mercados': '🛒',
       'Ferias': '🎪',
-      'Cultura': '🎭'
+      'Cultura': '🎭',
+      'Gastronomía': '🍽️',
+      'Bares': '🍺',
+      'Actividades': '🎯',
+      'Noche': '🌙'
     };
 
     const icon = iconMap[categoria] || '📍';
@@ -161,6 +168,7 @@ const MapView: React.FC = () => {
   // Función para centrar mapa en la posición del usuario
   const centerOnUser = () => {
     if (map.current && userLocation) {
+      programmaticMoveRef.current = true;
       map.current.setView([userLocation.lat, userLocation.lng], 15, {
         animate: true,
         duration: 0.8
@@ -169,21 +177,20 @@ const MapView: React.FC = () => {
     }
   };
 
-  // Función para calcular distancia
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 6371e3; // Radio de la Tierra en metros
-    const φ1 = lat1 * Math.PI / 180;
-    const φ2 = lat2 * Math.PI / 180;
-    const Δφ = (lat2 - lat1) * Math.PI / 180;
-    const Δλ = (lng2 - lng1) * Math.PI / 180;
-
-    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-              Math.cos(φ1) * Math.cos(φ2) *
-              Math.sin(Δλ/2) * Math.sin(Δλ/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-    return R * c;
-  };
+  // Caché de iconos: evita regenerar HTML/divIcon por cada marcador en cada rebuild
+  const iconCacheRef = useRef<Map<string, L.DivIcon>>(new Map());
+  const getPointIcon = useCallback((color: string, size: number, categoria: string, isSelected: boolean): L.DivIcon => {
+    const key = `${color}|${size}|${categoria}|${isSelected}`;
+    // NOTA: evitar tokens de exclamación seguidos de nombres de clases custom
+    // (el escáner de contenido de Tailwind los interpreta como variantes y
+    // genera reglas CSS fantasma a partir de las clases de index.css).
+    let cachedIcon = iconCacheRef.current.get(key);
+    if (!cachedIcon) {
+      cachedIcon = createPointIcon(color, size, categoria, isSelected);
+      iconCacheRef.current.set(key, cachedIcon);
+    }
+    return cachedIcon;
+  }, []);
 
   // Función para crear tarjeta informativa mejorada con favoritos
   const createInfoCard = (point: Feria) => {
@@ -305,19 +312,23 @@ const MapView: React.FC = () => {
         zoomControl: false
       });
 
-      // Usar estilo de mapa claro (CartoDB Positron)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '©OpenStreetMap, ©CartoDB',
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19
       }).addTo(map.current);
 
       // Crear grupo de clusters
-      markersCluster.current = (L as any).markerClusterGroup({
+      const markerClusterFactory = (
+        L as typeof L & {
+          markerClusterGroup: (opts?: L.MarkerClusterGroupOptions) => L.MarkerClusterGroup;
+        }
+      ).markerClusterGroup;
+      markersCluster.current = markerClusterFactory({
         maxClusterRadius: 50,
         spiderfyOnMaxZoom: true,
         showCoverageOnHover: false,
         zoomToBoundsOnClick: true,
-        iconCreateFunction: function(cluster: any) {
+        iconCreateFunction: function(cluster: L.MarkerCluster) {
           const count = cluster.getChildCount();
           let size = 'small';
           let className = 'marker-cluster-small';
@@ -346,8 +357,18 @@ const MapView: React.FC = () => {
         position: 'bottomright'
       }).addTo(map.current);
 
+      // Distingue paneos del usuario de los programáticos (setView/fitBounds)
+      // para no entrar en bucles ni pelear con el usuario.
       map.current.on('movestart', () => {
-        setIsUserMovingMap(true);
+        if (!programmaticMoveRef.current) {
+          setIsUserMovingMap(true);
+        }
+      });
+
+      map.current.on('moveend', () => {
+        if (programmaticMoveRef.current) {
+          programmaticMoveRef.current = false;
+        }
       });
 
       map.current.on('click', () => {
@@ -399,6 +420,7 @@ const MapView: React.FC = () => {
     }).addTo(map.current);
 
     if (!isUserMovingMap) {
+      programmaticMoveRef.current = true;
       map.current.setView([userLocation.lat, userLocation.lng], 14, {
         animate: true,
         duration: 0.8
@@ -414,7 +436,7 @@ const MapView: React.FC = () => {
     markersCluster.current.clearLayers();
 
     // MOSTRAR TODOS los marcadores filtrados
-    let pointsToShow = filteredFerias;
+    const pointsToShow = filteredFerias;
 
     // Agregar marcadores al cluster
     pointsToShow.forEach((point: Feria) => {
@@ -423,15 +445,16 @@ const MapView: React.FC = () => {
       const markerSize = 32;
 
       const marker = L.marker([point.lat, point.lng], {
-        icon: createPointIcon(markerColor, markerSize, point.categoria, isSelected)
+        icon: getPointIcon(markerColor, markerSize, point.categoria, isSelected)
       });
 
       // Manejar clic en marcador
       marker.on('click', (e) => {
         e.originalEvent.stopPropagation();
         setSelectedMarker(point);
-        
+
         // Centrar el mapa en el marcador seleccionado
+        programmaticMoveRef.current = true;
         map.current!.setView([point.lat, point.lng], Math.max(map.current!.getZoom(), 15), {
           animate: true,
           duration: 0.8
@@ -448,15 +471,17 @@ const MapView: React.FC = () => {
         group.addLayer(userMarker.current);
       }
       try {
+        programmaticMoveRef.current = true;
         map.current.fitBounds(group.getBounds().pad(0.1), {
           animate: true,
           duration: 0.8
         });
       } catch (error) {
         console.log('No se pudo ajustar los límites del mapa');
+        programmaticMoveRef.current = false;
       }
     }
-  }, [filteredFerias, userLocation, isUserMovingMap, selectedMarker]);
+  }, [filteredFerias, userLocation, isUserMovingMap, selectedMarker, getPointIcon]);
 
   return (
     <div className="h-full w-full relative">

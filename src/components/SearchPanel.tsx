@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Search, MapPin, Clock, Tag, Star, Filter } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
-import { ETIQUETAS_SISTEMA } from '../types';
+import { ETIQUETAS_SISTEMA, Feria, SearchFilters } from '../types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,31 +15,67 @@ interface SearchPanelProps {
 }
 
 const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
-  const { searchFilters, setSearchFilters, filteredFerias } = useApp();
-  const [localFilters, setLocalFilters] = useState(searchFilters);
+  const { searchFilters, setSearchFilters, ferias } = useApp();
+  const [localFilters, setLocalFilters] = useState<SearchFilters>(searchFilters);
   const [activeTab, setActiveTab] = useState<'general' | 'productos' | 'ubicacion' | 'especialidades'>('general');
   const [searchValue, setSearchValue] = useState(localFilters.direccion || '');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<Feria[]>([]);
 
-  // Búsqueda en tiempo real con debounce
+  // Al abrir el panel, arrancar de los filtros globales vigentes
   useEffect(() => {
-    const searchTimeout = setTimeout(() => {
+    if (isOpen) {
+      setLocalFilters(searchFilters);
+      setSearchValue(searchFilters.direccion || '');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // Búsqueda progresiva: primero local (instantánea), luego servidor si faltan resultados
+  useEffect(() => {
+    let cancelled = false;
+    const searchTimeout = setTimeout(async () => {
       if (searchValue.length > 2) {
-        const results = filteredFerias
+        const needle = searchValue.toLowerCase();
+        const local = ferias
           .filter(feria =>
-            feria.nombre.toLowerCase().includes(searchValue.toLowerCase()) ||
-            feria.direccion.toLowerCase().includes(searchValue.toLowerCase()) ||
-            feria.barrio?.toLowerCase().includes(searchValue.toLowerCase())
+            feria.nombre.toLowerCase().includes(needle) ||
+            feria.direccion.toLowerCase().includes(needle) ||
+            feria.barrio?.toLowerCase().includes(needle)
           )
           .slice(0, 5);
-        setSearchResults(results);
+
+        if (local.length >= 5 || cancelled) {
+          if (!cancelled) setSearchResults(local);
+          return;
+        }
+
+        // Completar con búsqueda en la DB masiva (PostgREST ilike)
+        try {
+          const { searchPlaces } = await import('../integrations/supabase/placesService');
+          const remote = await searchPlaces(searchValue, 8);
+          if (cancelled) return;
+          const seen = new Set(local.map(r => r.id));
+          const merged = [...local];
+          for (const r of remote) {
+            if (!seen.has(r.id)) {
+              merged.push(r);
+              if (merged.length >= 8) break;
+            }
+          }
+          setSearchResults(merged.slice(0, 8));
+        } catch {
+          if (!cancelled) setSearchResults(local);
+        }
       } else {
         setSearchResults([]);
       }
     }, 300);
 
-    return () => clearTimeout(searchTimeout);
-  }, [searchValue, filteredFerias]);
+    return () => {
+      cancelled = true;
+      clearTimeout(searchTimeout);
+    };
+  }, [searchValue, ferias]);
 
   const handleApplyFilters = () => {
     setSearchFilters(localFilters);
@@ -54,7 +90,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
     setSearchResults([]);
   };
 
-  const handleMultiSelect = (category: keyof typeof localFilters, value: string) => {
+  const handleMultiSelect = (category: keyof SearchFilters, value: string) => {
     const currentValues = (localFilters[category] as string[]) || [];
     const newValues = currentValues.includes(value)
       ? currentValues.filter(v => v !== value)
@@ -66,7 +102,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
     });
   };
 
-  const isSelected = (category: keyof typeof localFilters, value: string) => {
+  const isSelected = (category: keyof SearchFilters, value: string) => {
     return (localFilters[category] as string[])?.includes(value) || false;
   };
 
@@ -78,7 +114,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
     ).length;
   };
 
-  const handleSearchSelect = (result: any) => {
+  const handleSearchSelect = (result: Feria) => {
     setSearchValue(result.nombre);
     setLocalFilters({
       ...localFilters,
@@ -171,21 +207,22 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
             )}
           </div>
 
-          {/* Tabs mejorados */}
+          {/* Tabs mejorados (clases estáticas: Tailwind JIT no genera
+              clases interpoladas dinámicamente) */}
           <div className="overflow-x-auto scrollbar-hide">
             <div className="flex border-b border-gray-200 min-w-max bg-white">
-              {[
-                { id: 'general', label: 'Filtros', icon: Filter, color: 'orange' },
-                { id: 'productos', label: 'Productos', icon: Tag, color: 'purple' },
-                { id: 'ubicacion', label: 'Zona', icon: MapPin, color: 'blue' },
-                { id: 'especialidades', label: 'Tipo', icon: Star, color: 'green' }
-              ].map(({ id, label, icon: Icon, color }) => (
+              {([
+                { id: 'general', label: 'Filtros', icon: Filter, activeClass: 'text-orange-600 border-orange-600 bg-orange-50' },
+                { id: 'productos', label: 'Productos', icon: Tag, activeClass: 'text-purple-600 border-purple-600 bg-purple-50' },
+                { id: 'ubicacion', label: 'Zona', icon: MapPin, activeClass: 'text-blue-600 border-blue-600 bg-blue-50' },
+                { id: 'especialidades', label: 'Tipo', icon: Star, activeClass: 'text-green-600 border-green-600 bg-green-50' }
+              ] as const).map(({ id, label, icon: Icon, activeClass }) => (
                 <button
                   key={id}
-                  onClick={() => setActiveTab(id as any)}
-                  className={`flex items-center gap-2 py-3 px-4 text-sm font-semibold transition-all whitespace-nowrap ${activeTab === id
-                    ? `text-${color}-600 border-b-2 border-${color}-600 bg-${color}-50`
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                  onClick={() => setActiveTab(id)}
+                  className={`flex items-center gap-2 py-3 px-4 text-sm font-semibold transition-all whitespace-nowrap border-b-2 ${activeTab === id
+                    ? activeClass
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50 border-transparent'
                     }`}
                 >
                   <Icon size={14} />
@@ -242,7 +279,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                         key={value}
                         onClick={() => setLocalFilters({
                           ...localFilters,
-                          horarioTipo: localFilters.horarioTipo === value ? undefined : value as any
+                          horarioTipo: localFilters.horarioTipo === value ? undefined : (value as Feria['horarioTipo'])
                         })}
                         className={`p-3 rounded-xl border-2 transition-all text-xs text-center ${localFilters.horarioTipo === value
                           ? 'border-orange-500 bg-orange-50 text-orange-700'

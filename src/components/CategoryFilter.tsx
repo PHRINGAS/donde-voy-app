@@ -1,24 +1,27 @@
 import React from 'react';
 import { useApp } from '../contexts/AppContext';
+import { CATEGORIAS_PRINCIPALES } from '../types';
+
+const filterTypes = [
+    { id: 'Todos', label: 'Todos', icon: '📍' },
+    { id: 'Gastronomía', label: 'Gastronomía', icon: '🍽️' },
+    { id: 'Bares', label: 'Bares', icon: '🍺' },
+    { id: 'Cultura', label: 'Cultura', icon: '🎭' },
+    { id: 'Actividades', label: 'Actividades', icon: '🎯' },
+    { id: 'Noche', label: 'Noche', icon: '🌙' },
+    { id: 'Mercados', label: 'Mercados', icon: '🛒' },
+    { id: 'Ferias', label: 'Ferias', icon: '🎪' },
+];
 
 const CategoryFilter: React.FC = () => {
     const { searchFilters, setSearchFilters, ferias } = useApp();
 
-    const filterTypes = [
-        { id: 'Todos', label: 'Todos', icon: '📍' },
-        { id: 'Mercados', label: 'Mercados', icon: '🛒' },
-        { id: 'Ferias', label: 'Ferias', icon: '🎪' },
-        { id: 'Cultura', label: 'Cultura', icon: '🎭' },
-        { id: 'Orgánico', label: 'Orgánico', icon: '🌱' },
-        { id: 'Vegano', label: 'Vegano', icon: '🥗' }
-    ];
-
     // ARREGLA EL BUG DEL CONTADOR VEGANO
     const getCategoryCount = (category: string) => {
         if (category === 'Todos') return ferias.length;
-        
+
         // Para categorías principales
-        if (['Mercados', 'Ferias', 'Cultura'].includes(category)) {
+        if (CATEGORIAS_PRINCIPALES.includes(category)) {
             return ferias.filter(feria => feria.categoria === category).length;
         }
         

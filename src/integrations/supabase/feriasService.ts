@@ -4,49 +4,76 @@ import type { TablesInsert, TablesUpdate } from './types';
 
 export interface FeriasService {
     getAllFerias(): Promise<Feria[]>;
-    getFeriasByLocation(lat: number, lng: number, radiusKm: number): Promise<Feria[]>;
+    getFeriasByLocation(lat: number, lng: number, radiusMeters: number): Promise<Feria[]>;
     getFeriasByTipo(tipo: string): Promise<Feria[]>;
     getFeriasByDia(dia: string): Promise<Feria[]>;
     searchFerias(query: string): Promise<Feria[]>;
     insertFeria(feria: TablesInsert<'ferias'>): Promise<Feria | null>;
     updateFeria(id: string, feria: TablesUpdate<'ferias'>): Promise<Feria | null>;
     deleteFeria(id: string): Promise<boolean>;
-    syncFeriasFromGeoJSON(ferias: Feria[]): Promise<{ success: number; errors: number }>;
 }
 
-// Función para convertir Feria a formato de Supabase
-const feriaToSupabase = (feria: Feria): TablesInsert<'ferias'> => ({
-    id: feria.id,
-    nombre: feria.nombre,
-    direccion: feria.direccion,
-    lat: feria.lat,
-    lng: feria.lng,
-    tipo: feria.tipo,
-    dias_funcionamiento: feria.diasFuncionamiento,
-    horarios: feria.horarios,
-    productos: feria.productos,
-    descripcion: feria.descripcion || null,
-    telefono: feria.telefono || null,
-    barrio: null, // Se puede extraer de la descripción si es necesario
-    comuna: null, // Se puede extraer de la descripción si es necesario
-    observaciones: null
-});
+// Requiere haber aplicado 002_align_ferias_schema.sql (columnas categoria,
+// etiquetas, horario_tipo, frecuencia, especialidad, servicios).
+const normalizeHorarios = (value: unknown): { apertura: string; cierre: string } => {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const o = value as Record<string, unknown>;
+        if (typeof o.apertura === 'string' && typeof o.cierre === 'string') {
+            return { apertura: o.apertura, cierre: o.cierre };
+        }
+    }
+    return { apertura: '08:00', cierre: '18:00' };
+};
 
-// Función para convertir datos de Supabase a Feria
-const supabaseToFeria = (row: any): Feria => ({
+interface FeriaDbRow {
+    id: string;
+    nombre: string;
+    direccion: string;
+    lat: number;
+    lng: number;
+    tipo: string;
+    categoria?: string | null;
+    dias_funcionamiento: string[];
+    horarios: unknown;
+    productos: string[];
+    etiquetas?: string[] | null;
+    horario_tipo?: string | null;
+    frecuencia?: string | null;
+    especialidad?: string[] | null;
+    servicios?: string[] | null;
+    descripcion?: string | null;
+    telefono?: string | null;
+    barrio?: string | null;
+    comuna?: string | null;
+    observaciones?: string | null;
+}
+
+const supabaseToFeria = (row: FeriaDbRow): Feria => ({
     id: row.id,
     nombre: row.nombre,
     direccion: row.direccion,
     lat: row.lat,
     lng: row.lng,
     tipo: row.tipo,
-    diasFuncionamiento: row.dias_funcionamiento,
-    horarios: row.horarios,
-    productos: row.productos,
-    descripcion: row.descripcion,
-    telefono: row.telefono,
-    distancia: undefined // Se calcula dinámicamente
+    categoria: row.categoria || 'Ferias',
+    diasFuncionamiento: row.dias_funcionamiento ?? [],
+    horarios: normalizeHorarios(row.horarios),
+    productos: row.productos ?? [],
+    etiquetas: row.etiquetas ?? [],
+    horarioTipo: (row.horario_tipo as Feria['horarioTipo']) || 'todo_dia',
+    frecuencia: (row.frecuencia as Feria['frecuencia']) || 'semanal',
+    especialidad: row.especialidad ?? [],
+    servicios: row.servicios ?? [],
+    descripcion: row.descripcion || undefined,
+    telefono: row.telefono || undefined,
+    barrio: row.barrio || undefined,
+    comuna: row.comuna || undefined,
+    observaciones: row.observaciones || undefined,
+    distancia: undefined // Se calcula dinámicamente en el cliente
 });
+
+const toFeriaOrNull = (data: unknown): Feria | null =>
+    data ? supabaseToFeria(data as FeriaDbRow) : null;
 
 export const feriasService: FeriasService = {
     async getAllFerias(): Promise<Feria[]> {
@@ -68,14 +95,14 @@ export const feriasService: FeriasService = {
         }
     },
 
-    async getFeriasByLocation(lat: number, lng: number, radiusKm: number): Promise<Feria[]> {
+    async getFeriasByLocation(lat: number, lng: number, radiusMeters: number): Promise<Feria[]> {
         try {
-            // Usar la función earth_distance para calcular distancias
             const { data, error } = await supabase
-                .from('ferias')
-                .select('*')
-                .filter('earth_distance(ll_to_earth(lat, lng), ll_to_earth(?, ?))', 'lte', radiusKm * 1000)
-                .order('earth_distance(ll_to_earth(lat, lng), ll_to_earth(?, ?))');
+                .rpc('nearby_ferias', {
+                    p_lat: lat,
+                    p_lng: lng,
+                    p_radius_m: radiusMeters
+                });
 
             if (error) {
                 console.error('Error fetching ferias by location:', error);
@@ -165,7 +192,7 @@ export const feriasService: FeriasService = {
                 return null;
             }
 
-            return supabaseToFeria(data);
+            return toFeriaOrNull(data);
         } catch (error) {
             console.error('Error in insertFeria:', error);
             return null;
@@ -186,7 +213,7 @@ export const feriasService: FeriasService = {
                 return null;
             }
 
-            return supabaseToFeria(data);
+            return toFeriaOrNull(data);
         } catch (error) {
             console.error('Error in updateFeria:', error);
             return null;
@@ -210,48 +237,5 @@ export const feriasService: FeriasService = {
             console.error('Error in deleteFeria:', error);
             return false;
         }
-    },
-
-    async syncFeriasFromGeoJSON(ferias: Feria[]): Promise<{ success: number; errors: number }> {
-        let success = 0;
-        let errors = 0;
-
-        for (const feria of ferias) {
-            try {
-                const supabaseFeria = feriaToSupabase(feria);
-
-                // Intentar insertar, si falla por duplicado, actualizar
-                const { error: insertError } = await supabase
-                    .from('ferias')
-                    .insert(supabaseFeria);
-
-                if (insertError) {
-                    // Si es error de duplicado, intentar actualizar
-                    if (insertError.code === '23505') { // Código de error de duplicado
-                        const { error: updateError } = await supabase
-                            .from('ferias')
-                            .update(supabaseFeria)
-                            .eq('id', feria.id);
-
-                        if (updateError) {
-                            console.error(`Error updating feria ${feria.id}:`, updateError);
-                            errors++;
-                        } else {
-                            success++;
-                        }
-                    } else {
-                        console.error(`Error inserting feria ${feria.id}:`, insertError);
-                        errors++;
-                    }
-                } else {
-                    success++;
-                }
-            } catch (error) {
-                console.error(`Error processing feria ${feria.id}:`, error);
-                errors++;
-            }
-        }
-
-        return { success, errors };
     }
-}; 
+};
